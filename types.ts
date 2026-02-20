@@ -19,6 +19,7 @@ export interface Client {
     state: string;
   };
   phone: string;
+  whatsapp: string;
   email: string;
   contactPerson: string;
   createdAt: string;

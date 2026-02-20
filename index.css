@@ -1,0 +1,69 @@
+@layer base {
+    :root {
+        font-size: 17px;
+        /* Increased from default 16px */
+        --bg-main: #f0f4ff;
+        /* very light frost blue */
+        --bg-surface: #ffffff;
+        /* pure white */
+        --bg-card: rgba(255, 255, 255, 0.8);
+        /* slightly more opaque */
+        --border-subtle: rgba(15, 23, 42, 0.12);
+        /* darker border for better definition */
+        --text-main: #0f172a;
+        --text-muted: #334155;
+        /* slate-700 for better contrast */
+        --accent-indigo: #4f46e5;
+        --accent-emerald: #10b981;
+        --accent-orange: #f59e0b;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        background-image:
+            radial-gradient(circle at 10% 20%, rgba(67, 56, 202, 0.03) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(5, 150, 105, 0.03) 0%, transparent 40%),
+            url("https://www.transparenttextures.com/patterns/white-diamond.png");
+        background-attachment: fixed;
+        color: var(--text-main);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 5px;
+        border: 2px solid var(--bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.premium-shadow {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #818cf8 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
