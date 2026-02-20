@@ -1,20 +1,31 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 
 interface LoginProps {
     onLogin: () => void;
 }
 
-type Mode = 'login' | 'recovery';
+type Mode = 'login' | 'recovery' | 'update_password';
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [mode, setMode] = useState<Mode>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Detectar se estamos voltando de um email de recuperação
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                setMode('update_password');
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -51,6 +62,33 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         }
     };
 
+    const handleUpdatePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            setError('As senhas não coincidem.');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { error: updateError } = await supabase.auth.updateUser({ password });
+            if (updateError) throw updateError;
+            setSuccessMsg('Senha atualizada com sucesso! Você já pode acessar.');
+            setTimeout(() => {
+                setMode('login');
+                setSuccessMsg(null);
+                setPassword('');
+                setConfirmPassword('');
+            }, 3000);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const switchMode = (newMode: Mode) => {
         setMode(newMode);
         setError(null);
@@ -68,7 +106,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <div className="text-center mb-8 md:mb-12">
                     <div className="inline-block px-4 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-4 md:mb-6">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">
-                            {mode === 'login' ? 'Plataforma Corporativa' : 'Recuperação de Acesso'}
+                            {mode === 'login' ? 'Plataforma Corporativa' : mode === 'recovery' ? 'Recuperação de Acesso' : 'Nova Credencial'}
                         </span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-2">
@@ -76,7 +114,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     </h1>
                     <div className="h-1 w-12 bg-indigo-600 mx-auto rounded-full" />
                     <p className="text-slate-500 font-bold mt-4 md:mt-6 uppercase text-[10px] tracking-widest">
-                        {mode === 'login' ? 'Controle Governamental' : 'Insira seu e-mail cadastrado'}
+                        {mode === 'login' ? 'Controle Governamental' : mode === 'recovery' ? 'Insira seu e-mail cadastrado' : 'Defina sua nova chave de acesso'}
                     </p>
                 </div>
 
@@ -172,6 +210,62 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                             className="w-full text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-slate-900 transition-colors"
                         >
                             ← Voltar ao login
+                        </button>
+                    </form>
+                )}
+
+                {/* UPDATE PASSWORD FORM */}
+                {mode === 'update_password' && (
+                    <form onSubmit={handleUpdatePassword} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nova Senha</label>
+                            <input
+                                required
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold placeholder:text-slate-700"
+                                placeholder="••••••••"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Confirmar Nova Senha</label>
+                            <input
+                                required
+                                type="password"
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                className="w-full px-6 py-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold placeholder:text-slate-700"
+                                placeholder="••••••••"
+                            />
+                        </div>
+
+                        {error && (
+                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                                <p className="text-rose-400 text-xs font-bold text-center uppercase tracking-tight">{error}</p>
+                            </div>
+                        )}
+
+                        {successMsg && (
+                            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                <p className="text-emerald-500 text-xs font-bold text-center tracking-tight">{successMsg}</p>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all disabled:opacity-50 active:scale-95 text-sm uppercase tracking-widest"
+                        >
+                            {loading ? 'Salvando...' : 'Salvar Nova Senha'}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => switchMode('login')}
+                            className="w-full text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-slate-900 transition-colors"
+                        >
+                            ← Cancelar
                         </button>
                     </form>
                 )}
