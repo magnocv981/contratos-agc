@@ -75,20 +75,19 @@ const App: React.FC = () => {
           <ClientManager
             clients={clients}
             contracts={contracts}
+            currentUser={currentUser}
             onAdd={async (c) => {
               const newClient = await storage.saveClient(c);
               await updateClients();
               setPromptContractForClient(newClient);
             }}
             onEdit={async (c) => {
-              // Note: Need to implement editClient in storage.ts if needed
-              // For now, reload
               await updateClients();
             }}
-            onDelete={async (id) => {
+            onDelete={currentUser.role === 'admin' ? async (id) => {
               await storage.deleteClient(id);
               await updateClients();
-            }}
+            } : undefined}
             onPromptContract={(client) => setPromptContractForClient(client)}
           />
         );
@@ -97,18 +96,18 @@ const App: React.FC = () => {
           <ContractManager
             contracts={contracts}
             clients={clients}
+            currentUser={currentUser}
             onAdd={async (c) => {
               await storage.saveContract(c);
               await updateContracts();
             }}
             onEdit={async (c) => {
-              // Note: Need to implement editContract in storage.ts
               await updateContracts();
             }}
-            onDelete={async (id) => {
+            onDelete={currentUser.role === 'admin' ? async (id) => {
               await storage.deleteContract(id);
               await updateContracts();
-            }}
+            } : undefined}
             forceOpenWithClientId={forceContractOpen}
             onCloseForceOpen={() => setForceContractOpen(undefined)}
           />
@@ -117,6 +116,7 @@ const App: React.FC = () => {
         return (
           <UserManager
             users={users}
+            currentUser={currentUser}
             onAdd={() => updateUsers()}
             onDelete={() => updateUsers()}
           />

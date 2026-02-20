@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Client, Contract } from '../types';
+import { Client, Contract, User } from '../types';
 import { ReportService } from '../services/reports';
 
 interface ClientManagerProps {
   clients: Client[];
   contracts: Contract[];
+  currentUser: User;
   onAdd: (client: Client) => void;
   onEdit: (client: Client) => void;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
   onPromptContract: (client: Client) => void;
 }
 
@@ -17,7 +18,7 @@ const BRAZILIAN_STATES = [
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ];
 
-const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, onAdd, onEdit, onDelete, onPromptContract }) => {
+const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, currentUser, onAdd, onEdit, onDelete, onPromptContract }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -192,13 +193,15 @@ const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, onAdd
                     >
                       ✏️
                     </button>
-                    <button
-                      onClick={() => onDelete(client.id)}
-                      className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 bg-white/50 hover:bg-rose-50 rounded-xl transition-all border border-slate-300 hover:border-rose-200 shadow-sm"
-                      title="Excluir Cliente"
-                    >
-                      🗑️
-                    </button>
+                    {currentUser.role === 'admin' && onDelete && (
+                      <button
+                        onClick={() => onDelete(client.id)}
+                        className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-slate-400 hover:text-rose-600 bg-white/50 hover:bg-rose-50 rounded-xl transition-all border border-slate-300 hover:border-rose-200 shadow-sm"
+                        title="Excluir Cliente"
+                      >
+                        🗑️
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

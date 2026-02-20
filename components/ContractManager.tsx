@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Client, Contract, ContractStatus } from '../types';
+import { Client, Contract, ContractStatus, User } from '../types';
 
 interface ContractManagerProps {
   contracts: Contract[];
   clients: Client[];
+  currentUser: User;
   onAdd: (contract: Contract) => void;
   onEdit: (contract: Contract) => void;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
   forceOpenWithClientId?: string;
   onCloseForceOpen?: () => void;
 }
@@ -15,6 +16,7 @@ interface ContractManagerProps {
 const ContractManager: React.FC<ContractManagerProps> = ({
   contracts,
   clients,
+  currentUser,
   onAdd,
   onEdit,
   onDelete,
@@ -197,13 +199,15 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                     >
                       ✏️
                     </button>
-                    <button
-                      onClick={() => onDelete(contract.id)}
-                      className="flex-1 sm:flex-none h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-lg md:rounded-xl bg-rose-50 border border-rose-100 text-rose-400 hover:text-rose-600 hover:border-rose-200 shadow-sm transition-all text-base"
-                      title="Excluir Contrato"
-                    >
-                      🗑️
-                    </button>
+                    {currentUser.role === 'admin' && onDelete && (
+                      <button
+                        onClick={() => onDelete(contract.id)}
+                        className="flex-1 sm:flex-none h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-lg md:rounded-xl bg-rose-50 border border-rose-100 text-rose-400 hover:text-rose-600 hover:border-rose-200 shadow-sm transition-all text-base"
+                        title="Excluir Contrato"
+                      >
+                        🗑️
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

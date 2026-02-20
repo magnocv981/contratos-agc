@@ -4,11 +4,12 @@ import { supabase } from '../services/supabase';
 
 interface UserManagerProps {
   users: User[];
+  currentUser: User;
   onAdd: () => void;
   onDelete: () => void;
 }
 
-const UserManager: React.FC<UserManagerProps> = ({ users, onAdd, onDelete }) => {
+const UserManager: React.FC<UserManagerProps> = ({ users, currentUser, onAdd, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,13 +61,15 @@ const UserManager: React.FC<UserManagerProps> = ({ users, onAdd, onDelete }) => 
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Equipe & Permissões</h2>
           <p className="text-lg md:text-xl text-slate-500 font-medium">Gestão centralizada de operadores e níveis hierárquicos.</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)] active:scale-95 w-full sm:w-auto justify-center"
-        >
-          <span className="mr-2 text-xl">+</span>
-          Novo Integrante
-        </button>
+        {currentUser.role === 'admin' && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center transition-all shadow-[0_0_30px_rgba(99,102,241,0.2)] active:scale-95 w-full sm:w-auto justify-center"
+          >
+            <span className="mr-2 text-xl">+</span>
+            Novo Integrante
+          </button>
+        )}
       </div>
 
       <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] border border-slate-300 overflow-hidden shadow-xl overflow-x-auto">
@@ -100,12 +103,14 @@ const UserManager: React.FC<UserManagerProps> = ({ users, onAdd, onDelete }) => 
                   </span>
                 </td>
                 <td className="p-4 md:p-6 text-right">
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-xl bg-white/50 border border-slate-300 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
-                  >
-                    🗑️
-                  </button>
+                  {currentUser.role === 'admin' && (
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-xl bg-white/50 border border-slate-300 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
