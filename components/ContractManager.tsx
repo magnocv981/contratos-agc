@@ -79,7 +79,22 @@ const ContractManager: React.FC<ContractManagerProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const dataToSave = { ...formData };
+
+    // Sanitize and validate - no negative values allowed
+    const sanitizedData = {
+      ...formData,
+      platformContracted: Math.max(0, formData.platformContracted || 0),
+      platformInstalled: Math.max(0, formData.platformInstalled || 0),
+      elevatorContracted: Math.max(0, formData.elevatorContracted || 0),
+      elevatorInstalled: Math.max(0, formData.elevatorInstalled || 0),
+      value: Math.max(0, formData.value || 0),
+      warranty: formData.warranty ? {
+        ...formData.warranty,
+        warrantyDays: Math.max(0, formData.warranty.warrantyDays || 0)
+      } : undefined
+    };
+
+    const dataToSave = { ...sanitizedData };
 
     // Automatic logic for "Completed" status -> Warranty
     if (dataToSave.status === ContractStatus.COMPLETED && !dataToSave.warranty) {
@@ -412,11 +427,23 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase">Qtd Contratada</label>
-                            <input type="number" value={formData.platformContracted} onChange={e => setFormData({ ...formData, platformContracted: Number(e.target.value) })} className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold" />
+                            <input
+                              type="number"
+                              min="0"
+                              value={formData.platformContracted}
+                              onChange={e => setFormData({ ...formData, platformContracted: Math.max(0, Number(e.target.value)) })}
+                              className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold"
+                            />
                           </div>
                           <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase">Qtd Instalada</label>
-                            <input type="number" value={formData.platformInstalled} onChange={e => setFormData({ ...formData, platformInstalled: Number(e.target.value) })} className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold" />
+                            <input
+                              type="number"
+                              min="0"
+                              value={formData.platformInstalled}
+                              onChange={e => setFormData({ ...formData, platformInstalled: Math.max(0, Number(e.target.value)) })}
+                              className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold"
+                            />
                           </div>
                         </div>
                       </div>
@@ -428,11 +455,23 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase">Qtd Contratada</label>
-                            <input type="number" value={formData.elevatorContracted} onChange={e => setFormData({ ...formData, elevatorContracted: Number(e.target.value) })} className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold" />
+                            <input
+                              type="number"
+                              min="0"
+                              value={formData.elevatorContracted}
+                              onChange={e => setFormData({ ...formData, elevatorContracted: Math.max(0, Number(e.target.value)) })}
+                              className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold"
+                            />
                           </div>
                           <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase">Qtd Instalada</label>
-                            <input type="number" value={formData.elevatorInstalled} onChange={e => setFormData({ ...formData, elevatorInstalled: Number(e.target.value) })} className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold" />
+                            <input
+                              type="number"
+                              min="0"
+                              value={formData.elevatorInstalled}
+                              onChange={e => setFormData({ ...formData, elevatorInstalled: Math.max(0, Number(e.target.value)) })}
+                              className="w-full bg-white border border-slate-300 text-slate-900 p-3 rounded-xl font-bold"
+                            />
                           </div>
                         </div>
                       </div>
@@ -443,7 +482,14 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                           <label className="text-[9px] font-black text-indigo-700 uppercase tracking-widest">Valor Global do Contrato</label>
                           <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">R$</span>
-                            <input type="number" step="0.01" value={formData.value} onChange={e => setFormData({ ...formData, value: Number(e.target.value) })} className="w-full bg-white border border-indigo-200 text-slate-900 pl-12 pr-4 py-3 rounded-xl font-black text-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={formData.value}
+                              onChange={e => setFormData({ ...formData, value: Math.max(0, Number(e.target.value)) })}
+                              className="w-full bg-white border border-indigo-200 text-slate-900 pl-12 pr-4 py-3 rounded-xl font-black text-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                            />
                           </div>
                         </div>
                       </div>
@@ -519,12 +565,13 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                             <label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Período (Dias)</label>
                             <input
                               type="number"
+                              min="0"
                               value={formData.warranty?.warrantyDays || 365}
                               onChange={e => setFormData({
                                 ...formData,
                                 warranty: {
                                   completionDate: formData.warranty?.completionDate || '',
-                                  warrantyDays: Number(e.target.value)
+                                  warrantyDays: Math.max(0, Number(e.target.value))
                                 }
                               })}
                               className="w-full bg-white border border-emerald-500/30 rounded-xl p-3 text-emerald-600 font-bold w-32"
