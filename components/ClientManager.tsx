@@ -102,13 +102,7 @@ const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, curre
     if (editingClient) {
       onEdit({ ...editingClient, ...formData } as Client);
     } else {
-      const newClient: Client = {
-        ...formData as Client,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString()
-      };
-      onAdd(newClient);
-      onPromptContract(newClient);
+      onAdd(formData as Client);
     }
     setIsModalOpen(false);
   };

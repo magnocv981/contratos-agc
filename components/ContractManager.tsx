@@ -112,12 +112,7 @@ const ContractManager: React.FC<ContractManagerProps> = ({
     if (editingContract) {
       onEdit({ ...editingContract, ...dataToSave } as Contract);
     } else {
-      const newContract: Contract = {
-        ...dataToSave as Contract,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString()
-      };
-      onAdd(newContract);
+      onAdd(dataToSave as Contract);
     }
     setIsModalOpen(false);
   };

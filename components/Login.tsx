@@ -49,8 +49,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, initialMode = 'login' }) => {
         }
     };
 
+    const [recoveryCooldown, setRecoveryCooldown] = useState(0);
+
     const handleRecovery = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (recoveryCooldown > 0) return;
+
         setLoading(true);
         setError(null);
         setSuccessMsg(null);
@@ -61,8 +65,22 @@ const Login: React.FC<LoginProps> = ({ onLogin, initialMode = 'login' }) => {
             });
             if (resetError) throw resetError;
             setSuccessMsg('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+            setRecoveryCooldown(60); // 60 seconds cooldown
+            const timer = setInterval(() => {
+                setRecoveryCooldown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
         } catch (err: any) {
-            setError(err.message);
+            if (err.status === 429) {
+                setError('Muitas solicitações. Aguarde um momento antes de tentar novamente.');
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -201,10 +219,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, initialMode = 'login' }) => {
 
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || recoveryCooldown > 0}
                             className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all disabled:opacity-50 active:scale-95 text-sm uppercase tracking-widest"
                         >
-                            {loading ? 'Enviando...' : 'Enviar Link de Recuperação'}
+                            {loading ? 'Enviando...' : recoveryCooldown > 0 ? `Aguarde ${recoveryCooldown}s` : 'Enviar Link de Recuperação'}
                         </button>
 
                         <button
