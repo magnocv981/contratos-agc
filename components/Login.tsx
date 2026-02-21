@@ -3,12 +3,13 @@ import { supabase } from '../services/supabase';
 
 interface LoginProps {
     onLogin: () => void;
+    initialMode?: Mode;
 }
 
 type Mode = 'login' | 'recovery' | 'update_password';
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
-    const [mode, setMode] = useState<Mode>('login');
+const Login: React.FC<LoginProps> = ({ onLogin, initialMode = 'login' }) => {
+    const [mode, setMode] = useState<Mode>(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,15 +18,20 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
     useEffect(() => {
-        // Detectar se estamos voltando de um email de recuperação
+        // Backup: Detectar se estamos voltando de um email de recuperação localmente
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'PASSWORD_RECOVERY') {
                 setMode('update_password');
             }
         });
 
+        // Caso o initialMode tenha mudado lá em cima, forçamos o efeito local
+        if (initialMode === 'update_password') {
+            setMode('update_password');
+        }
+
         return () => subscription.unsubscribe();
-    }, []);
+    }, [initialMode]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

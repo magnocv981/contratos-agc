@@ -133,5 +133,6 @@ export const storage = {
 
   signOut: async () => {
     await supabase.auth.signOut();
-  }
+  },
+  supabase
 };

@@ -19,6 +19,7 @@ const App: React.FC = () => {
 
   const [promptContractForClient, setPromptContractForClient] = useState<Client | null>(null);
   const [forceContractOpen, setForceContractOpen] = useState<string | undefined>(undefined);
+  const [isRecovering, setIsRecovering] = useState(false);
 
   const loadData = async () => {
     try {
@@ -44,6 +45,19 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    // Listener para eventos de autenticação globais
+    const { data: { subscription } } = storage.supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovering(true);
+      }
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        // Se o usuário logou ou atualizou perfil, carregamos os dados
+        loadData();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const updateClients = async () => {
@@ -130,8 +144,19 @@ const App: React.FC = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  if (loading) return <div className="p-10 text-center">Iniciando sistema...</div>;
-  if (!currentUser) return <Login onLogin={loadData} />;
+  if (loading) return <div className="p-10 text-center text-slate-500 font-bold uppercase tracking-widest animate-pulse">Iniciando sistema...</div>;
+
+  if (!currentUser || isRecovering) {
+    return (
+      <Login
+        onLogin={() => {
+          setIsRecovering(false);
+          loadData();
+        }}
+        initialMode={isRecovering ? 'update_password' : 'login'}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] overflow-x-hidden">
