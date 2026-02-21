@@ -56,6 +56,27 @@ export const storage = {
     if (error) throw error;
   },
 
+  updateClient: async (client: Client): Promise<void> => {
+    const { error } = await supabase
+      .from('clients')
+      .update({
+        name: client.name,
+        cnpj: client.cnpj,
+        street: client.address.street,
+        number: client.address.number,
+        neighborhood: client.address.neighborhood,
+        cep: client.address.cep,
+        city: client.address.city,
+        state: client.address.state,
+        phone: client.phone,
+        whatsapp: client.whatsapp,
+        email: client.email,
+        contact_person: client.contactPerson
+      })
+      .eq('id', client.id);
+    if (error) throw error;
+  },
+
   // Contracts
   getContracts: async (): Promise<Contract[]> => {
     const { data, error } = await supabase
@@ -110,6 +131,30 @@ export const storage = {
 
   deleteContract: async (id: string) => {
     const { error } = await supabase.from('contracts').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  updateContract: async (contract: Contract): Promise<void> => {
+    const { error } = await supabase
+      .from('contracts')
+      .update({
+        client_id: contract.clientId,
+        title: contract.title,
+        platform_contracted: contract.platformContracted,
+        platform_installed: contract.platformInstalled,
+        elevator_contracted: contract.elevatorContracted,
+        elevator_installed: contract.elevatorInstalled,
+        value: contract.value,
+        start_date: contract.startDate,
+        end_date: contract.endDate,
+        installation_address: contract.installationAddress,
+        estimated_installation_date: contract.estimatedInstallationDate,
+        status: contract.status,
+        warranty_completion_date: contract.warranty?.completionDate,
+        warranty_days: contract.warranty?.warrantyDays,
+        observations: contract.observations
+      })
+      .eq('id', contract.id);
     if (error) throw error;
   },
 

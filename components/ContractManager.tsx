@@ -104,6 +104,11 @@ const ContractManager: React.FC<ContractManagerProps> = ({
       };
     }
 
+    if (!formData.clientId) {
+      alert('Por favor, selecione um cliente para o contrato.');
+      return;
+    }
+
     if (editingContract) {
       onEdit({ ...editingContract, ...dataToSave } as Contract);
     } else {
@@ -484,6 +489,7 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-600 font-bold">R$</span>
                             <input
                               type="number"
+                              required
                               min="0"
                               step="0.01"
                               value={formData.value}
@@ -498,11 +504,11 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:col-span-3">
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Vigência Inicial</label>
-                        <input type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-bold" />
+                        <input type="date" required value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-bold" />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Vencimento Contratual</label>
-                        <input type="date" value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-bold" />
+                        <input type="date" required value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-bold" />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Estágio Atual</label>
@@ -525,7 +531,7 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Deadline de Instalação</label>
-                      <input type="date" value={formData.estimatedInstallationDate} onChange={e => setFormData({ ...formData, estimatedInstallationDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-black" />
+                      <input type="date" required value={formData.estimatedInstallationDate} onChange={e => setFormData({ ...formData, estimatedInstallationDate: e.target.value })} className="w-full bg-white border border-slate-300 text-slate-900 p-4 rounded-2xl font-black" />
                     </div>
 
                     <div className="lg:col-span-3 space-y-3">

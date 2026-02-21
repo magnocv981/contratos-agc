@@ -48,12 +48,16 @@ const App: React.FC = () => {
 
     // Listener para eventos de autenticação globais
     const { data: { subscription } } = storage.supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth Event:', event);
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecovering(true);
       }
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        // Se o usuário logou ou atualizou perfil, carregamos os dados
         loadData();
+      }
+      if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        setIsRecovering(false);
       }
     });
 
@@ -96,6 +100,7 @@ const App: React.FC = () => {
               setPromptContractForClient(newClient);
             }}
             onEdit={async (c) => {
+              await storage.updateClient(c);
               await updateClients();
             }}
             onDelete={currentUser.role === 'admin' ? async (id) => {
@@ -116,6 +121,7 @@ const App: React.FC = () => {
               await updateContracts();
             }}
             onEdit={async (c) => {
+              await storage.updateContract(c);
               await updateContracts();
             }}
             onDelete={currentUser.role === 'admin' ? async (id) => {

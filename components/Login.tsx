@@ -83,10 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, initialMode = 'login' }) => {
             if (updateError) throw updateError;
             setSuccessMsg('Senha atualizada com sucesso! Você já pode acessar.');
             setTimeout(() => {
-                setMode('login');
-                setSuccessMsg(null);
-                setPassword('');
-                setConfirmPassword('');
+                onLogin(); // Notifica o App que o processo terminou e libera a tela
             }, 3000);
         } catch (err: any) {
             setError(err.message);
