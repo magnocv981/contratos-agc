@@ -1,69 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
 @layer base {
     :root {
-        font-size: 17px;
-        /* Increased from default 16px */
-        --bg-main: #f0f4ff;
-        /* very light frost blue */
-        --bg-surface: #ffffff;
-        /* pure white */
-        --bg-card: rgba(255, 255, 255, 0.8);
-        /* slightly more opaque */
-        --border-subtle: rgba(15, 23, 42, 0.12);
-        /* darker border for better definition */
-        --text-main: #0f172a;
-        --text-muted: #334155;
-        /* slate-700 for better contrast */
-        --accent-indigo: #4f46e5;
-        --accent-emerald: #10b981;
-        --accent-orange: #f59e0b;
+        /* Colors - Deep Premium Palette */
+        --brand-primary: #6366f1;
+        --brand-primary-light: #818cf8;
+        --brand-indigo: #4f46e5;
+        --brand-emerald: #10b981;
+        --brand-rose: #f43f5e;
+        --brand-amber: #f59e0b;
+        
+        --background-app: #f8fafc;
+        --background-surface: #ffffff;
+        
+        --text-strong: #0f172a;
+        --text-regular: #334155;
+        --text-muted: #64748b;
+        --text-subtle: #94a3b8;
+
+        --border-default: #e2e8f0;
+        --border-glass: rgba(255, 255, 255, 0.4);
+        
+        /* Spacing */
+        --spacing-xs: 0.5rem;
+        --spacing-sm: 0.75rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --spacing-2xl: 3rem;
+
+        /* Shadows */
+        --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        --shadow-premium: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --shadow-indigo: 0 10px 15px -3px rgba(99, 102, 241, 0.2);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-        background-color: var(--bg-main);
-        background-image:
-            radial-gradient(circle at 10% 20%, rgba(67, 56, 202, 0.03) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(5, 150, 105, 0.03) 0%, transparent 40%),
-            url("https://www.transparenttextures.com/patterns/white-diamond.png");
-        background-attachment: fixed;
-        color: var(--text-main);
+        background-color: var(--background-app);
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+        color: var(--text-regular);
+        min-height: 100vh;
+        overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: var(--bg-main);
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: var(--border-subtle);
-        border-radius: 5px;
-        border: 2px solid var(--bg-main);
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: var(--text-muted);
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-strong);
+        letter-spacing: -0.02em;
     }
 }
 
-.glass-card {
+/* Premium Utilities */
+.glass-panel {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-soft);
 }
 
-.premium-shadow {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+.premium-card {
+    background: var(--background-surface);
+    border: 1px solid var(--border-default);
+    border-radius: 1.5rem;
+    padding: var(--spacing-lg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.text-gradient {
-    background: linear-gradient(135deg, #818cf8 0%, #10b981 100%);
+.premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-premium);
+    border-color: var(--brand-primary-light);
+}
+
+.text-gradient-indigo {
+    background: linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-primary) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.btn-primary {
+    background: var(--brand-indigo);
+    color: white;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-indigo);
+}
+
+.btn-primary:hover {
+    background: var(--brand-primary);
+    transform: scale(1.02);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-subtle);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

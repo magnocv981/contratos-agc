@@ -7,84 +7,53 @@ import UserManager from './components/UserManager';
 import ReportManager from './components/ReportManager';
 import Login from './components/Login';
 import { storage } from './services/storage';
+import { useAuth } from './context/AuthContext';
 import { Client, Contract, User } from './types';
 
 const App: React.FC = () => {
+  const { currentUser, loading, isRecovering, setIsRecovering, signOut, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [clients, setClients] = useState<Client[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const [promptContractForClient, setPromptContractForClient] = useState<Client | null>(null);
   const [forceContractOpen, setForceContractOpen] = useState<string | undefined>(undefined);
-  const [isRecovering, setIsRecovering] = useState(false);
 
-  const loadData = async () => {
+  const loadAppData = async () => {
+    if (!currentUser) return;
     try {
-      const user = await storage.getCurrentUser();
-      setCurrentUser(user);
-
-      if (user) {
-        const [loadedClients, loadedContracts, loadedUsers] = await Promise.all([
-          storage.getClients(),
-          storage.getContracts(),
-          storage.getUsers()
-        ]);
-        setClients(loadedClients);
-        setContracts(loadedContracts);
-        setUsers(loadedUsers);
-      }
+      const [loadedClients, loadedContracts, loadedUsers] = await Promise.all([
+        storage.getClients(),
+        storage.getContracts(),
+        storage.getUsers()
+      ]);
+      setClients(loadedClients);
+      setContracts(loadedContracts);
+      setUsers(loadedUsers);
     } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error loading app data:', error);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadAppData();
+  }, [currentUser]);
 
-    // Listener para eventos de autenticação globais
-    const { data: { subscription } } = storage.supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth Event:', event);
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsRecovering(true);
-      }
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        loadData();
-      }
-      if (event === 'SIGNED_OUT') {
-        setCurrentUser(null);
-        setIsRecovering(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const updateClients = async () => {
-    setClients(await storage.getClients());
-  };
-
-  const updateContracts = async () => {
-    setContracts(await storage.getContracts());
-  };
-
-  const updateUsers = async () => {
-    setUsers(await storage.getUsers());
-  };
+  const updateClients = async () => setClients(await storage.getClients());
+  const updateContracts = async () => setContracts(await storage.getContracts());
+  const updateUsers = async () => setUsers(await storage.getUsers());
 
   const handleLogout = async () => {
-    await storage.signOut();
-    setCurrentUser(null);
+    await signOut();
     setClients([]);
     setContracts([]);
     setUsers([]);
   };
 
   const renderContent = () => {
+    if (!currentUser) return null;
+
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard clients={clients} contracts={contracts} />;
@@ -157,7 +126,7 @@ const App: React.FC = () => {
       <Login
         onLogin={() => {
           setIsRecovering(false);
-          loadData();
+          refreshUser();
         }}
         initialMode={isRecovering ? 'update_password' : 'login'}
       />
@@ -165,7 +134,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] overflow-x-hidden">
+    <div className="flex min-h-screen bg-[var(--background-app)] text-[var(--text-regular)] overflow-x-hidden">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -196,7 +165,7 @@ const App: React.FC = () => {
 
       {promptContractForClient && (
         <div className="fixed inset-0 bg-white/20 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-10 max-w-md w-full border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.1)] animate-in zoom-in-95 duration-300">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-10 max-w-md w-full border border-white/40 shadow-premium animate-in zoom-in-95 duration-300">
             <div className="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-3xl mb-6 border border-emerald-500/30">
               ✨
             </div>

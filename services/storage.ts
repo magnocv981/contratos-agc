@@ -2,6 +2,42 @@
 import { supabase } from './supabase';
 import { Client, Contract, User } from '../types';
 
+// Helper mappers for consistent data structures
+const mapClient = (c: any): Client => ({
+  ...c,
+  address: {
+    street: c.street,
+    number: c.number,
+    neighborhood: c.neighborhood,
+    cep: c.cep,
+    city: c.city,
+    state: c.state
+  },
+  phone: c.phone,
+  whatsapp: c.whatsapp,
+  email: c.email,
+  contactPerson: c.contact_person,
+  createdAt: c.created_at
+});
+
+const mapContract = (c: any): Contract => ({
+  ...c,
+  clientId: c.client_id,
+  platformContracted: c.platform_contracted,
+  platformInstalled: c.platform_installed,
+  elevatorContracted: c.elevator_contracted,
+  elevatorInstalled: c.elevator_installed,
+  startDate: c.start_date,
+  endDate: c.end_date,
+  installationAddress: c.installation_address,
+  estimatedInstallationDate: c.estimated_installation_date,
+  warranty: c.warranty_completion_date ? {
+    completionDate: c.warranty_completion_date,
+    warrantyDays: c.warranty_days
+  } : undefined,
+  createdAt: c.created_at
+});
+
 export const storage = {
   // Clients
   getClients: async (): Promise<Client[]> => {
@@ -10,22 +46,7 @@ export const storage = {
       .select('*')
       .order('name');
     if (error) throw error;
-    return data.map(c => ({
-      ...c,
-      address: {
-        street: c.street,
-        number: c.number,
-        neighborhood: c.neighborhood,
-        cep: c.cep,
-        city: c.city,
-        state: c.state
-      },
-      phone: c.phone,
-      whatsapp: c.whatsapp,
-      email: c.email,
-      contactPerson: c.contact_person,
-      createdAt: c.created_at
-    }));
+    return (data || []).map(mapClient);
   },
 
   saveClient: async (client: Omit<Client, 'id' | 'createdAt'>): Promise<Client> => {
@@ -48,10 +69,10 @@ export const storage = {
       .select()
       .single();
     if (error) throw error;
-    return { ...data, address: client.address, contactPerson: data.contact_person, createdAt: data.created_at };
+    return mapClient(data);
   },
 
-  deleteClient: async (id: string) => {
+  deleteClient: async (id: string): Promise<void> => {
     const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) throw error;
   },
@@ -84,23 +105,7 @@ export const storage = {
       .select('*')
       .order('created_at', { ascending: false });
     if (error) throw error;
-    return data.map(c => ({
-      ...c,
-      clientId: c.client_id,
-      platformContracted: c.platform_contracted,
-      platformInstalled: c.platform_installed,
-      elevatorContracted: c.elevator_contracted,
-      elevatorInstalled: c.elevator_installed,
-      startDate: c.start_date,
-      endDate: c.end_date,
-      installationAddress: c.installation_address,
-      estimatedInstallationDate: c.estimated_installation_date,
-      warranty: c.warranty_completion_date ? {
-        completionDate: c.warranty_completion_date,
-        warrantyDays: c.warranty_days
-      } : undefined,
-      createdAt: c.created_at
-    }));
+    return (data || []).map(mapContract);
   },
 
   saveContract: async (contract: Omit<Contract, 'id' | 'createdAt'>): Promise<Contract> => {
@@ -126,10 +131,10 @@ export const storage = {
       .select()
       .single();
     if (error) throw error;
-    return { ...data, clientId: data.client_id, createdAt: data.created_at } as any;
+    return mapContract(data);
   },
 
-  deleteContract: async (id: string) => {
+  deleteContract: async (id: string): Promise<void> => {
     const { error } = await supabase.from('contracts').delete().eq('id', id);
     if (error) throw error;
   },
@@ -162,7 +167,7 @@ export const storage = {
   getUsers: async (): Promise<User[]> => {
     const { data, error } = await supabase.from('profiles').select('*');
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   getCurrentUser: async (): Promise<User | null> => {
