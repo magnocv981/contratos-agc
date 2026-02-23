@@ -18,7 +18,7 @@ const BRAZILIAN_STATES = [
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ];
 
-const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, currentUser, onAdd, onEdit, onDelete }) => {
+const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, currentUser, onAdd, onEdit, onDelete, onPromptContract }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -151,6 +151,13 @@ const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, curre
                   </td>
                   <td className="p-6">
                     <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => onPromptContract(client)}
+                        className="w-10 h-10 flex items-center justify-center text-subtle hover:text-brand-emerald bg-white hover:bg-brand-emerald/5 rounded-2xl transition-all border border-border-default hover:border-brand-emerald/20 shadow-sm"
+                        title="Vincular Contrato"
+                      >
+                        ➕
+                      </button>
                       <button
                         onClick={() => handleOpenModal(client, true)}
                         className="w-10 h-10 flex items-center justify-center text-subtle hover:text-brand-primary bg-white hover:bg-brand-primary/5 rounded-2xl transition-all border border-border-default hover:border-brand-primary/20 shadow-sm"
