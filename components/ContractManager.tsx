@@ -291,11 +291,11 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-subtle uppercase">Contractadas</label>
-                          <input type="number" readOnly={isViewOnly} value={formData.platformContracted} onChange={e => setFormData({ ...formData, platformContracted: Number(e.target.value) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
+                          <input type="number" min="0" readOnly={isViewOnly} value={formData.platformContracted} onChange={e => setFormData({ ...formData, platformContracted: Math.max(0, Number(e.target.value)) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
                         </div>
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-subtle uppercase">Instaladas</label>
-                          <input type="number" readOnly={isViewOnly} value={formData.platformInstalled} onChange={e => setFormData({ ...formData, platformInstalled: Number(e.target.value) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
+                          <input type="number" min="0" readOnly={isViewOnly} value={formData.platformInstalled} onChange={e => setFormData({ ...formData, platformInstalled: Math.max(0, Number(e.target.value)) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
                         </div>
                       </div>
                     </div>
@@ -304,11 +304,11 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-subtle uppercase">Contractadas</label>
-                          <input type="number" readOnly={isViewOnly} value={formData.elevatorContracted} onChange={e => setFormData({ ...formData, elevatorContracted: Number(e.target.value) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
+                          <input type="number" min="0" readOnly={isViewOnly} value={formData.elevatorContracted} onChange={e => setFormData({ ...formData, elevatorContracted: Math.max(0, Number(e.target.value)) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
                         </div>
                         <div className="space-y-2">
                           <label className="text-[9px] font-black text-subtle uppercase">Instaladas</label>
-                          <input type="number" readOnly={isViewOnly} value={formData.elevatorInstalled} onChange={e => setFormData({ ...formData, elevatorInstalled: Number(e.target.value) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
+                          <input type="number" min="0" readOnly={isViewOnly} value={formData.elevatorInstalled} onChange={e => setFormData({ ...formData, elevatorInstalled: Math.max(0, Number(e.target.value)) })} className="w-full bg-white border border-border-default p-3.5 rounded-xl font-black transition-all focus:border-brand-primary outline-none" />
                         </div>
                       </div>
                     </div>
@@ -331,7 +331,7 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-black text-brand-primary uppercase tracking-widest ml-1">Valor Global (BRL)</label>
-                      <input type="number" step="0.01" readOnly={isViewOnly} value={formData.value} onChange={e => setFormData({ ...formData, value: Number(e.target.value) })} className="w-full px-5 py-3.5 rounded-xl bg-white border border-border-default focus:border-brand-primary outline-none font-black text-xl text-brand-primary" />
+                      <input type="number" min="0" step="0.01" readOnly={isViewOnly} value={formData.value} onChange={e => setFormData({ ...formData, value: Math.max(0, Number(e.target.value)) })} className="w-full px-5 py-3.5 rounded-xl bg-white border border-border-default focus:border-brand-primary outline-none font-black text-xl text-brand-primary" />
                     </div>
                     <div className="space-y-3">
                       <label className="text-[10px] font-black text-brand-primary uppercase tracking-widest ml-1">Status Operacional</label>
