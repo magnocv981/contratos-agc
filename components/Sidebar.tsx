@@ -38,9 +38,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, us
         <div className="p-8 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-black tracking-tighter text-strong">
-              SINCRO<span className="text-brand-primary">.</span>
+              AGC - ELEV<span className="text-brand-primary">.</span>
             </h1>
-            <p className="text-[10px] text-muted mt-1 uppercase tracking-widest font-black">Gestão Governamental</p>
+            <p className="text-[10px] text-muted mt-1 uppercase tracking-widest font-black">Gestão Coletiva de Contratos</p>
           </div>
           <button
             onClick={onClose}
@@ -59,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, us
                 if (window.innerWidth < 1024) onClose();
               }}
               className={`w-full flex items-center space-x-3 px-5 py-3.5 rounded-2xl transition-all duration-300 group ${activeTab === item.id
-                  ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-sm'
-                  : 'text-muted hover:bg-slate-100 hover:text-strong'
+                ? 'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-sm'
+                : 'text-muted hover:bg-slate-100 hover:text-strong'
                 }`}
             >
               <span className={`text-xl transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110 opacity-70'}`}>

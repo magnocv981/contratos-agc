@@ -148,7 +148,7 @@ const App: React.FC = () => {
         {/* Mobile Header */}
         <header className="lg:hidden bg-white/70 backdrop-blur-md p-4 flex justify-between items-center border-b border-slate-300 sticky top-0 z-30">
           <h1 className="text-xl font-black tracking-tighter text-slate-900">
-            SINCRO<span className="text-indigo-500">.</span>
+            AGC - ELEV<span className="text-indigo-500">.</span>
           </h1>
           <button
             onClick={() => setIsSidebarOpen(true)}
