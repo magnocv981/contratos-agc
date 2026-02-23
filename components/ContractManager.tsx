@@ -403,8 +403,8 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                     </div>
                   </div>
 
-                  {formData.status === ContractStatus.COMPLETED && (
-                    <div className="p-8 border-2 border-brand-emerald bg-brand-emerald/[0.02] rounded-3xl space-y-6 shadow-premium transition-all animate-in zoom-in-95 duration-300">
+                  {String(formData.status).toLowerCase() === ContractStatus.COMPLETED.toLowerCase() && (
+                    <div className="p-8 border-2 border-brand-emerald bg-brand-emerald/[0.02] rounded-3xl space-y-6 shadow-premium transition-all">
                       <header className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="p-2 bg-brand-emerald rounded-lg text-white font-bold text-xs ring-4 ring-brand-emerald/10">🛡️</div>
