@@ -91,6 +91,25 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
 
       {/* Grid Secundária */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* Card Movido para o Início para Garantir Visibilidade */}
+        <div className="premium-card flex flex-col justify-between group h-full transition-all duration-300">
+          <div className="flex justify-between items-start mb-6">
+            <h4 className="text-slate-500 text-xs font-black uppercase tracking-widest">
+              Total Instalado
+            </h4>
+            <span className="text-emerald-500 text-xl group-hover:scale-110 transition-transform">✅</span>
+          </div>
+          <div>
+            <p className="text-3xl lg:text-4xl font-black text-slate-900 leading-none">
+              {totalInstalled}
+            </p>
+            <div className="text-xs font-bold text-slate-500 mt-4 flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
+              Unidades entregues
+            </div>
+          </div>
+        </div>
+
         <div className="premium-card flex flex-col justify-between group">
           <div className="flex justify-between items-start mb-6">
             <span className="text-subtle text-xs font-black uppercase tracking-widest">Faturamento Global</span>
@@ -123,32 +142,6 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
             <p className="text-3xl lg:text-4xl font-black text-strong">{totalContracted}</p>
             <p className="text-xs font-bold text-muted mt-2 flex items-center">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-primary mr-2" /> Unidades vendidas
-            </p>
-          </div>
-        </div>
-
-        <div className="premium-card flex flex-col justify-between group h-full transition-all duration-300">
-          <div className="flex justify-between items-start mb-6">
-            <span
-              className="text-[#64748b] text-xs font-black uppercase tracking-widest block"
-              style={{ opacity: 1, visibility: 'visible', color: '#64748b' }}
-            >
-              Total Instalado
-            </span>
-            <span className="text-emerald-500 text-xl group-hover:scale-110 transition-transform">✅</span>
-          </div>
-          <div>
-            <p
-              className="text-3xl lg:text-4xl font-black text-[#0f172a] block"
-              style={{ opacity: 1, visibility: 'visible', color: '#0f172a' }}
-            >
-              {totalInstalled}
-            </p>
-            <p
-              className="text-xs font-bold text-[#64748b] mt-2 flex items-center"
-              style={{ opacity: 1, visibility: 'visible', color: '#64748b' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mr-2" /> Unidades entregues
             </p>
           </div>
         </div>
