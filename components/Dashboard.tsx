@@ -127,16 +127,15 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
           </div>
         </div>
 
-        <div className="premium-card bg-brand-emerald text-white border-transparent relative overflow-hidden group shadow-indigo">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <span className="text-white/80 text-xs font-bold uppercase tracking-widest">Total Instalado</span>
-            <span className="text-white text-xl">✅</span>
+        <div className="premium-card flex flex-col justify-between group">
+          <div className="flex justify-between items-start mb-6">
+            <span className="text-subtle text-xs font-black uppercase tracking-widest">Total Instalado</span>
+            <span className="text-brand-emerald text-xl group-hover:scale-110 transition-transform">✅</span>
           </div>
-          <div className="relative z-10">
-            <p className="text-4xl lg:text-5xl font-black text-white tracking-tighter">{totalInstalled}</p>
-            <p className="text-xs font-bold uppercase text-white/70 mt-3 flex items-center">
-              <span className="w-2 h-2 rounded-full bg-white/40 mr-2 animate-pulse" /> Unidades entregues
+          <div>
+            <p className="text-3xl lg:text-4xl font-black text-strong">{totalInstalled}</p>
+            <p className="text-xs font-bold text-muted mt-2 flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald mr-2" /> Unidades entregues
             </p>
           </div>
         </div>
@@ -158,9 +157,9 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
               <div
                 key={idx}
                 className={`p-6 rounded-2xl border transition-all duration-500 hover:scale-[1.03] ${insight.status === 'warning' ? 'bg-brand-amber/5 border-brand-amber/10' :
-                    insight.status === 'danger' ? 'bg-brand-rose/5 border-brand-rose/10' :
-                      insight.status === 'success' ? 'bg-brand-emerald/5 border-brand-emerald/10' :
-                        'bg-brand-primary/5 border-brand-primary/10'
+                  insight.status === 'danger' ? 'bg-brand-rose/5 border-brand-rose/10' :
+                    insight.status === 'success' ? 'bg-brand-emerald/5 border-brand-emerald/10' :
+                      'bg-brand-primary/5 border-brand-primary/10'
                   }`}
               >
                 <div className="flex items-center space-x-4 mb-5">
@@ -170,9 +169,9 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
                   <div>
                     <h4 className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{insight.title}</h4>
                     <p className={`text-xl font-black mt-1 ${insight.status === 'warning' ? 'text-brand-amber' :
-                        insight.status === 'danger' ? 'text-brand-rose' :
-                          insight.status === 'success' ? 'text-brand-emerald' :
-                            'text-brand-primary-light'
+                      insight.status === 'danger' ? 'text-brand-rose' :
+                        insight.status === 'success' ? 'text-brand-emerald' :
+                          'text-brand-primary-light'
                       }`}>
                       {insight.value}
                     </p>
