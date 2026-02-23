@@ -127,15 +127,28 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
           </div>
         </div>
 
-        <div className="premium-card flex flex-col justify-between group">
+        <div className="premium-card flex flex-col justify-between group h-full transition-all duration-300">
           <div className="flex justify-between items-start mb-6">
-            <span className="text-subtle text-xs font-black uppercase tracking-widest">Total Instalado</span>
-            <span className="text-brand-emerald text-xl group-hover:scale-110 transition-transform">✅</span>
+            <span
+              className="text-[#64748b] text-xs font-black uppercase tracking-widest block"
+              style={{ opacity: 1, visibility: 'visible', color: '#64748b' }}
+            >
+              Total Instalado
+            </span>
+            <span className="text-emerald-500 text-xl group-hover:scale-110 transition-transform">✅</span>
           </div>
           <div>
-            <p className="text-3xl lg:text-4xl font-black text-strong">{totalInstalled}</p>
-            <p className="text-xs font-bold text-muted mt-2 flex items-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald mr-2" /> Unidades entregues
+            <p
+              className="text-3xl lg:text-4xl font-black text-[#0f172a] block"
+              style={{ opacity: 1, visibility: 'visible', color: '#0f172a' }}
+            >
+              {totalInstalled}
+            </p>
+            <p
+              className="text-xs font-bold text-[#64748b] mt-2 flex items-center"
+              style={{ opacity: 1, visibility: 'visible', color: '#64748b' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] mr-2" /> Unidades entregues
             </p>
           </div>
         </div>
