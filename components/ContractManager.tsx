@@ -401,6 +401,52 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                         {Object.values(ContractStatus).map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
+
+                    {formData.status === ContractStatus.COMPLETED && (
+                      <div className="p-6 bg-brand-emerald/[0.03] rounded-2xl border border-brand-emerald/10 space-y-6 animate-in slide-in-from-top-4 duration-500">
+                        <header className="flex items-center space-x-2">
+                          <span className="text-brand-emerald">🛡️</span>
+                          <h4 className="text-[10px] font-black uppercase text-brand-emerald tracking-widest">Controle de Garantia</h4>
+                        </header>
+
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-subtle uppercase">Data da Conclusão</label>
+                            <input
+                              type="date"
+                              readOnly={isViewOnly}
+                              value={formData.warranty?.completionDate || ''}
+                              onChange={e => setFormData({
+                                ...formData,
+                                warranty: {
+                                  completionDate: e.target.value,
+                                  warrantyDays: formData.warranty?.warrantyDays || 365
+                                }
+                              })}
+                              className="w-full bg-white border border-border-default px-4 py-2.5 rounded-xl font-bold text-strong focus:border-brand-emerald outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black text-subtle uppercase">Prazo de Garantia (Dias)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              readOnly={isViewOnly}
+                              onKeyDown={preventNegative}
+                              value={formData.warranty?.warrantyDays || 365}
+                              onChange={e => setFormData({
+                                ...formData,
+                                warranty: {
+                                  completionDate: formData.warranty?.completionDate || new Date().toISOString().split('T')[0],
+                                  warrantyDays: Math.max(0, Number(e.target.value))
+                                }
+                              })}
+                              className="w-full bg-white border border-border-default px-4 py-2.5 rounded-xl font-black text-strong focus:border-brand-emerald outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-8 bg-slate-50 rounded-3xl border border-border-default/50 space-y-6">
