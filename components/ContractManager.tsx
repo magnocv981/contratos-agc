@@ -365,7 +365,14 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black text-subtle uppercase tracking-widest ml-1">Observações Técnicas / Histórico</label>
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-[10px] font-black text-subtle uppercase tracking-widest">Observações Técnicas / Histórico</label>
+                      {formData.updatedByName && (
+                        <span className="text-[9px] font-black text-brand-primary uppercase tracking-widest bg-brand-primary/5 px-3 py-1 rounded-full">
+                          Registrado por: {formData.updatedByName}
+                        </span>
+                      )}
+                    </div>
                     <textarea readOnly={isViewOnly} value={formData.observations} onChange={e => setFormData({ ...formData, observations: e.target.value })} className="w-full p-6 bg-white border border-border-default rounded-[2.5rem] text-strong focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none font-medium leading-relaxed resize-none disabled:bg-slate-50" rows={6} placeholder="..." />
                   </div>
                 </div>

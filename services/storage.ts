@@ -3,6 +3,11 @@ import { supabase } from './supabase';
 import { Client, Contract, User } from '../types';
 
 // Helper mappers for consistent data structures
+const sanitizeDate = (date: string | undefined): string | null => {
+  if (!date || date.trim() === '') return null;
+  return date;
+};
+
 const mapClient = (c: any): Client => ({
   ...c,
   address: {
@@ -35,6 +40,8 @@ const mapContract = (c: any): Contract => ({
     completionDate: c.warranty_completion_date,
     warrantyDays: c.warranty_days
   } : undefined,
+  updatedBy: c.updated_by,
+  updatedByName: c.profiles?.name,
   createdAt: c.created_at
 });
 
@@ -102,13 +109,14 @@ export const storage = {
   getContracts: async (): Promise<Contract[]> => {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*')
+      .select('*, profiles(name)')
       .order('created_at', { ascending: false });
     if (error) throw error;
     return (data || []).map(mapContract);
   },
 
   saveContract: async (contract: Omit<Contract, 'id' | 'createdAt'>): Promise<Contract> => {
+    const { data: { session } } = await supabase.auth.getSession();
     const { data, error } = await supabase
       .from('contracts')
       .insert({
@@ -119,16 +127,17 @@ export const storage = {
         elevator_contracted: contract.elevatorContracted,
         elevator_installed: contract.elevatorInstalled,
         value: contract.value,
-        start_date: contract.startDate,
-        end_date: contract.endDate,
+        start_date: sanitizeDate(contract.startDate),
+        end_date: sanitizeDate(contract.endDate),
         installation_address: contract.installationAddress,
-        estimated_installation_date: contract.estimatedInstallationDate,
+        estimated_installation_date: sanitizeDate(contract.estimatedInstallationDate),
         status: contract.status,
-        warranty_completion_date: contract.warranty?.completionDate,
+        warranty_completion_date: sanitizeDate(contract.warranty?.completionDate),
         warranty_days: contract.warranty?.warrantyDays,
-        observations: contract.observations
+        observations: contract.observations,
+        updated_by: session?.user?.id
       })
-      .select()
+      .select('*, profiles(name)')
       .single();
     if (error) throw error;
     return mapContract(data);
@@ -140,6 +149,7 @@ export const storage = {
   },
 
   updateContract: async (contract: Contract): Promise<void> => {
+    const { data: { session } } = await supabase.auth.getSession();
     const { error } = await supabase
       .from('contracts')
       .update({
@@ -150,14 +160,15 @@ export const storage = {
         elevator_contracted: contract.elevatorContracted,
         elevator_installed: contract.elevatorInstalled,
         value: contract.value,
-        start_date: contract.startDate,
-        end_date: contract.endDate,
+        start_date: sanitizeDate(contract.startDate),
+        end_date: sanitizeDate(contract.endDate),
         installation_address: contract.installationAddress,
-        estimated_installation_date: contract.estimatedInstallationDate,
+        estimated_installation_date: sanitizeDate(contract.estimatedInstallationDate),
         status: contract.status,
-        warranty_completion_date: contract.warranty?.completionDate,
+        warranty_completion_date: sanitizeDate(contract.warranty?.completionDate),
         warranty_days: contract.warranty?.warrantyDays,
-        observations: contract.observations
+        observations: contract.observations,
+        updated_by: session?.user?.id
       })
       .eq('id', contract.id);
     if (error) throw error;

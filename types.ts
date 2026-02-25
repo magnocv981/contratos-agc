@@ -44,6 +44,8 @@ export interface Contract {
     warrantyDays: number;
   };
   observations: string;
+  updatedBy?: string;
+  updatedByName?: string;
   createdAt: string;
 }
 
