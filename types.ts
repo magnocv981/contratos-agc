@@ -49,6 +49,27 @@ export interface Contract {
   createdAt: string;
 }
 
+export enum AccountsReceivableStatus {
+  PENDING = 'Pendente',
+  RECEIVED = 'Recebido',
+  CANCELLED = 'Cancelado'
+}
+
+export interface AccountsReceivable {
+  id: string;
+  contractId: string;
+  invoiceNumber?: string;
+  issueDate?: string;
+  dueDate?: string;
+  status: AccountsReceivableStatus;
+  observations?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Join data
+  contractTitle?: string;
+  clientName?: string;
+}
+
 export interface User {
   id: string;
   name: string;

@@ -6,9 +6,10 @@ import ContractManager from './components/ContractManager';
 import UserManager from './components/UserManager';
 import ReportManager from './components/ReportManager';
 import Login from './components/Login';
+import AccountsReceivableManager from './components/AccountsReceivableManager';
 import { storage } from './services/storage';
 import { useAuth } from './context/AuthContext';
-import { Client, Contract, User } from './types';
+import { Client, Contract, User, AccountsReceivable } from './types';
 
 const App: React.FC = () => {
   const { currentUser, loading, isRecovering, setIsRecovering, signOut, refreshUser } = useAuth();
@@ -16,6 +17,7 @@ const App: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [receivables, setReceivables] = useState<AccountsReceivable[]>([]);
 
   const [promptContractForClient, setPromptContractForClient] = useState<Client | null>(null);
   const [forceContractOpen, setForceContractOpen] = useState<string | undefined>(undefined);
@@ -23,14 +25,16 @@ const App: React.FC = () => {
   const loadAppData = async () => {
     if (!currentUser) return;
     try {
-      const [loadedClients, loadedContracts, loadedUsers] = await Promise.all([
+      const [loadedClients, loadedContracts, loadedUsers, loadedReceivables] = await Promise.all([
         storage.getClients(),
         storage.getContracts(),
-        storage.getUsers()
+        storage.getUsers(),
+        storage.getAccountsReceivable()
       ]);
       setClients(loadedClients);
       setContracts(loadedContracts);
       setUsers(loadedUsers);
+      setReceivables(loadedReceivables);
     } catch (error) {
       console.error('Error loading app data:', error);
     }
@@ -43,6 +47,7 @@ const App: React.FC = () => {
   const updateClients = async () => setClients(await storage.getClients());
   const updateContracts = async () => setContracts(await storage.getContracts());
   const updateUsers = async () => setUsers(await storage.getUsers());
+  const updateReceivables = async () => setReceivables(await storage.getAccountsReceivable());
 
   const handleLogout = async () => {
     await signOut();
@@ -112,6 +117,15 @@ const App: React.FC = () => {
         );
       case 'reports':
         return <ReportManager contracts={contracts} clients={clients} />;
+      case 'receivables':
+        return (
+          <AccountsReceivableManager
+            receivables={receivables}
+            contracts={contracts}
+            currentUser={currentUser}
+            onUpdate={updateReceivables}
+          />
+        );
       default:
         return <Dashboard clients={clients} contracts={contracts} />;
     }

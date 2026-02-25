@@ -15,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, us
     { id: 'dashboard', label: 'Painel Geral', icon: '📊' },
     { id: 'clients', label: 'Clientes', icon: '👥' },
     { id: 'contracts', label: 'Contratos', icon: '📄' },
+    { id: 'receivables', label: 'Contas a Receber', icon: '💰' },
     { id: 'reports', label: 'Relatórios', icon: '📈' },
     { id: 'users', label: 'Usuários', icon: '👤' },
   ];

@@ -1,6 +1,6 @@
 
 import { supabase } from './supabase';
-import { Client, Contract, User } from '../types';
+import { Client, Contract, User, AccountsReceivable, AccountsReceivableStatus } from '../types';
 
 // Helper mappers for consistent data structures
 const sanitizeDate = (date: string | undefined): string | null => {
@@ -43,6 +43,20 @@ const mapContract = (c: any): Contract => ({
   updatedBy: c.updated_by,
   updatedByName: c.profiles?.name,
   createdAt: c.created_at
+});
+
+const mapAccountsReceivable = (r: any): AccountsReceivable => ({
+  id: r.id,
+  contractId: r.contract_id,
+  invoiceNumber: r.invoice_number,
+  issueDate: r.issue_date,
+  dueDate: r.due_date,
+  status: r.status as AccountsReceivableStatus,
+  observations: r.observations,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+  contractTitle: r.contracts?.title,
+  clientName: r.contracts?.clients?.name
 });
 
 export const storage = {
@@ -171,6 +185,65 @@ export const storage = {
         updated_by: session?.user?.id
       })
       .eq('id', contract.id);
+    if (error) throw error;
+  },
+
+  // Accounts Receivable
+  getAccountsReceivable: async (): Promise<AccountsReceivable[]> => {
+    const { data, error } = await supabase
+      .from('accounts_receivable')
+      .select('*, contracts(title, clients(name))')
+      .order('due_date', { ascending: true });
+    if (error) throw error;
+    return (data || []).map(mapAccountsReceivable);
+  },
+
+  saveAccountsReceivable: async (receivable: Omit<AccountsReceivable, 'id' | 'createdAt' | 'updatedAt'>): Promise<AccountsReceivable> => {
+    const { data, error } = await supabase
+      .from('accounts_receivable')
+      .insert({
+        contract_id: receivable.contractId,
+        invoice_number: receivable.invoiceNumber,
+        issue_date: sanitizeDate(receivable.issueDate),
+        due_date: sanitizeDate(receivable.dueDate),
+        status: receivable.status,
+        observations: receivable.observations
+      })
+      .select('*, contracts(title, clients(name))')
+      .single();
+    if (error) throw error;
+    return mapAccountsReceivable(data);
+  },
+
+  updateAccountsReceivable: async (receivable: AccountsReceivable): Promise<void> => {
+    const { error } = await supabase
+      .from('accounts_receivable')
+      .update({
+        invoice_number: receivable.invoiceNumber,
+        issue_date: sanitizeDate(receivable.issueDate),
+        due_date: sanitizeDate(receivable.dueDate),
+        status: receivable.status,
+        observations: receivable.observations,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', receivable.id);
+    if (error) throw error;
+  },
+
+  deleteAccountsReceivable: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('accounts_receivable').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  generateReceivableForContract: async (contractId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('accounts_receivable')
+      .insert({
+        contract_id: contractId,
+        issue_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: 'Pendente'
+      });
     if (error) throw error;
   },
 
