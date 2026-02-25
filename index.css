@@ -109,6 +109,28 @@
     transform: scale(0.98);
 }
 
+/* Brand Utilities */
+.text-brand-primary { color: var(--brand-primary) !important; }
+.bg-brand-primary { background-color: var(--brand-primary) !important; }
+.border-brand-primary { border-color: var(--brand-primary) !important; }
+
+.text-brand-emerald { color: var(--brand-emerald) !important; }
+.bg-brand-emerald { background-color: var(--brand-emerald) !important; }
+
+.text-brand-rose { color: var(--brand-rose) !important; }
+.bg-brand-rose { background-color: var(--brand-rose) !important; }
+
+.text-brand-amber { color: var(--brand-amber) !important; }
+.bg-brand-amber { background-color: var(--brand-amber) !important; }
+
+.text-strong { color: var(--text-strong) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-subtle { color: var(--text-subtle) !important; }
+
+.bg-strong { background-color: var(--text-strong) !important; }
+.bg-muted { background-color: var(--text-muted) !important; }
+.bg-subtle { background-color: var(--text-subtle) !important; }
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

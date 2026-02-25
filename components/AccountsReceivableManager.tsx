@@ -88,7 +88,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                 {completedContractsWithoutReceivable.length > 0 && (
                     <button
                         onClick={() => setIsGenerating(!isGenerating)}
-                        className="group flex items-center space-x-3 bg-brand-primary hover:bg-brand-primary/90 text-white px-6 py-4 rounded-2xl font-black transition-all shadow-premium"
+                        className="group flex items-center space-x-3 bg-[#4f46e5] hover:bg-[#4338ca] text-white px-6 py-4 rounded-2xl font-black transition-all shadow-premium"
                     >
                         <span className="text-xl group-hover:rotate-12 transition-transform">💰</span>
                         <span>Sincronizar ({completedContractsWithoutReceivable.length})</span>
