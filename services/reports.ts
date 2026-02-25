@@ -193,10 +193,11 @@ export const ReportService = {
     /**
      * Generates a PDF listing all contracts currently under equipment warranty.
      */
-    generateWarrantyReport: (contracts: Contract[]) => {
+    generateWarrantyReport: (contracts: Contract[], clients: Client[]) => {
         try {
             const doc = new jsPDF();
             const now = new Date();
+            const safeClients = clients || [];
 
             const activeWarranties = (contracts || []).filter(c => {
                 if (!c.warranty?.completionDate) return false;
@@ -207,43 +208,57 @@ export const ReportService = {
                 return expiry > now;
             });
 
-            doc.setFontSize(20);
-            doc.setTextColor(180, 83, 9); // amber-800
-            doc.text('Controle de Equipamentos em Garantia', 14, 22);
+            doc.setFontSize(22);
+            doc.setTextColor(79, 70, 229); // indigo-600
+            doc.text('Relatório de Garantias Ativas', 14, 22);
+
+            doc.setFontSize(10);
+            doc.setTextColor(140);
+            doc.text(`Posição em: ${now.toLocaleDateString('pt-BR')}`, 14, 30);
+            doc.setDrawColor(226, 232, 240);
+            doc.line(14, 35, 196, 35);
 
             const tableData = activeWarranties.map(c => {
+                const client = safeClients.find(cl => cl.id === c.clientId);
                 const completion = new Date(c.warranty!.completionDate);
                 const expiry = new Date(completion);
                 expiry.setDate(expiry.getDate() + (c.warranty!.warrantyDays || 0));
                 const remaining = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
                 return [
+                    client?.name || 'Cliente N/D',
                     c.title || 'Contrato s/ Título',
                     completion.toLocaleDateString('pt-BR'),
-                    `${c.warranty!.warrantyDays} dias`,
                     expiry.toLocaleDateString('pt-BR'),
                     `${remaining} dias`
                 ];
             });
 
             autoTable(doc, {
-                startY: 35,
-                head: [['Contrato', 'Instalação', 'Prazo Contratado', 'Término da Garantia', 'Saldo de Dias']],
+                startY: 40,
+                head: [['Cliente/Instituição', 'Contrato', 'Instalação', 'Vencimento', 'Saldo']],
                 body: tableData,
-                headStyles: { fillColor: [245, 158, 11] },
-                styles: { fontSize: 9 }
+                headStyles: { fillColor: [79, 70, 229], fontSize: 9 },
+                styles: { fontSize: 8 },
+                columnStyles: {
+                    0: { cellWidth: 50 },
+                    1: { cellWidth: 55 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 25 },
+                    4: { halign: 'center' }
+                }
             });
 
             if (activeWarranties.length === 0) {
                 doc.setFontSize(11);
                 doc.setTextColor(100);
-                doc.text('Nenhum contrato possui garantia ativa no momento.', 14, 45);
+                doc.text('Nenhum equipamento possui garantia ativa no momento.', 14, 50);
             }
 
-            doc.save('Controle_Garantias_Ativas.pdf');
+            doc.save(`Garantias_Ativas_${now.toISOString().split('T')[0]}.pdf`);
         } catch (error) {
             console.error('Erro (Relatório Garantia):', error);
-            alert('Erro ao gerar lista de garantias. Verifique as datas de instalação.');
+            alert('Erro ao gerar lista de garantias. Verifique os dados de instalação.');
         }
     }
 };

@@ -8,7 +8,7 @@ interface ReportManagerProps {
 }
 
 const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => {
-    const [activeReport, setActiveReport] = useState<'year' | 'state'>('year');
+    const [activeReport, setActiveReport] = useState<'year' | 'state' | 'warranty'>('year');
 
     const getSalesByYear = () => {
         const stats: Record<string, { plat: number, elev: number, val: number }> = {};
@@ -35,8 +35,27 @@ const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => 
         return Object.keys(stats).sort().map(st => ({ label: st, ...stats[st] }));
     };
 
+    const getWarrantyStats = () => {
+        const now = new Date();
+        return contracts.filter(c => {
+            if (!c.warranty?.completionDate) return false;
+            const completion = new Date(c.warranty.completionDate);
+            const expiry = new Date(completion);
+            expiry.setDate(expiry.getDate() + (c.warranty.warrantyDays || 0));
+            return expiry > now;
+        }).map(c => {
+            const client = clients.find(cl => cl.id === c.clientId);
+            const completion = new Date(c.warranty!.completionDate);
+            const expiry = new Date(completion);
+            expiry.setDate(expiry.getDate() + (c.warranty!.warrantyDays || 0));
+            const remaining = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            return { label: client?.name || 'Cliente N/D', plat: c.platformInstalled, elev: c.elevatorInstalled, val: remaining, subLabel: c.title };
+        }).sort((a, b) => a.val - b.val); // Sort by expiry
+    };
+
     const yearData = getSalesByYear();
     const stateData = getSalesByState();
+    const warrantyData = getWarrantyStats();
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700">
@@ -61,6 +80,12 @@ const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => 
                     >
                         Visão Regional
                     </button>
+                    <button
+                        onClick={() => setActiveReport('warranty')}
+                        className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeReport === 'warranty' ? 'bg-white text-brand-primary shadow-sm' : 'text-subtle hover:text-strong'}`}
+                    >
+                        Controle de Garantia
+                    </button>
                 </div>
             </header>
 
@@ -70,10 +95,16 @@ const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => 
 
                     <div className="flex justify-between items-center mb-12 relative z-10">
                         <h3 className="text-2xl font-black text-strong tracking-tight">
-                            {activeReport === 'year' ? 'Performance Contratual Anual' : 'Distribuição Regional (UF)'}
+                            {activeReport === 'year' ? 'Performance Contratual Anual' :
+                                activeReport === 'state' ? 'Distribuição Regional (UF)' :
+                                    'Equipamentos sob Garantia'}
                         </h3>
                         <button
-                            onClick={() => activeReport === 'year' ? ReportService.generateSalesByYear(contracts) : ReportService.generateSalesByState(contracts, clients)}
+                            onClick={() => {
+                                if (activeReport === 'year') ReportService.generateSalesByYear(contracts);
+                                else if (activeReport === 'state') ReportService.generateSalesByState(contracts, clients);
+                                else ReportService.generateWarrantyReport(contracts, clients);
+                            }}
                             className="btn-primary px-6 py-3 bg-white border border-border-default !text-subtle hover:!text-brand-primary hover:border-brand-primary/30 transition-all shadow-sm text-[10px] font-black uppercase tracking-widest flex items-center"
                         >
                             <span className="mr-2">📥</span> Gravar PDF
@@ -81,41 +112,35 @@ const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => 
                     </div>
 
                     <div className="space-y-10 relative z-10">
-                        {(activeReport === 'year' ? yearData : stateData).map((item, idx) => (
+                        {(activeReport === 'year' ? yearData : activeReport === 'state' ? stateData : warrantyData).map((item, idx) => (
                             <div key={idx} className="group animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
                                 <div className="flex justify-between items-end mb-3">
-                                    <div>
-                                        <span className="text-[10px] font-black text-subtle uppercase tracking-widest mb-1 block">{item.label}</span>
-                                        <p className="text-base font-black text-strong">{item.plat + item.elev} <span className="text-[10px] font-medium text-muted uppercase">Unidades Totais</span></p>
+                                    <div className="flex-1 mr-4">
+                                        <span className="text-[10px] font-black text-subtle uppercase tracking-widest mb-1 block truncate max-w-[200px] lg:max-w-xs">{item.label}</span>
+                                        <p className="text-sm font-black text-strong truncate">{activeReport === 'warranty' ? (item as any).subLabel : `${item.plat + item.elev} Unidades Totais`}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-lg font-black text-brand-primary">
-                                            <span className="text-[10px] font-medium mr-1 tracking-tight">R$</span>
-                                            {item.val?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        <p className={`text-lg font-black ${activeReport === 'warranty' ? 'text-amber-600' : 'text-brand-primary'}`}>
+                                            {activeReport === 'warranty' ? (
+                                                <><span className="text-[10px] font-medium mr-1 tracking-tight">Vence em</span>{item.val}d</>
+                                            ) : (
+                                                <><span className="text-[10px] font-medium mr-1 tracking-tight">R$</span>{item.val?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
+                                            )}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner border border-border-default/20">
                                     <div
-                                        className="bg-brand-primary h-full transition-all duration-1000 ease-out shadow-indigo"
-                                        style={{ width: `${(item.plat / (item.plat + item.elev || 1)) * 100}%` }}
-                                        title={`Plataformas: ${item.plat}`}
+                                        className={`${activeReport === 'warranty' ? 'bg-amber-500' : 'bg-brand-primary'} h-full transition-all duration-1000 ease-out shadow-sm`}
+                                        style={{ width: activeReport === 'warranty' ? `${Math.min(100, (item.val / 365) * 100)}%` : `${(item.plat / (item.plat + item.elev || 1)) * 100}%` }}
                                     />
-                                    <div
-                                        className="bg-brand-emerald h-full transition-all duration-1000 ease-out"
-                                        style={{ width: `${(item.elev / (item.plat + item.elev || 1)) * 100}%` }}
-                                        title={`Elevadores: ${item.elev}`}
-                                    />
-                                </div>
-
-                                <div className="flex justify-between mt-3 text-[9px] font-black uppercase tracking-[0.2em] opacity-60">
-                                    <span className="flex items-center text-brand-primary">
-                                        <div className="w-1.5 h-1.5 bg-brand-primary rounded-full mr-2" /> {item.plat} Plats
-                                    </span>
-                                    <span className="flex items-center text-brand-emerald">
-                                        <div className="w-1.5 h-1.5 bg-brand-emerald rounded-full mr-2" /> {item.elev} Elevs
-                                    </span>
+                                    {activeReport !== 'warranty' && (
+                                        <div
+                                            className="bg-brand-emerald h-full transition-all duration-1000 ease-out"
+                                            style={{ width: `${(item.elev / (item.plat + item.elev || 1)) * 100}%` }}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -125,11 +150,19 @@ const ReportManager: React.FC<ReportManagerProps> = ({ contracts, clients }) => 
                 <div className="space-y-8">
                     <div className="bg-slate-900 text-white p-12 rounded-[3.5rem] shadow-premium relative overflow-hidden group border border-slate-800">
                         <div className="absolute bottom-0 right-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-[100px] group-hover:scale-150 transition-transform duration-1000" />
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-primary mb-8 ml-1">Relatório Cognitivo</h4>
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-primary mb-8 ml-1">Análise de Ativos</h4>
                         <p className="text-2xl font-light leading-relaxed text-slate-200">
-                            A concentração comercial em <span className="font-black text-white italic">Plataformas de Acessibilidade</span> atinge <span className="text-brand-primary font-black text-3xl mx-1">
-                                {Math.round((contracts.reduce((acc, c) => acc + c.platformContracted, 0) / (contracts.reduce((acc, c) => acc + c.platformContracted + c.elevatorContracted, 0) || 1)) * 100)}%
-                            </span> do volume total de ativos gerenciados localmente.
+                            {activeReport === 'warranty' ? (
+                                <>
+                                    Atualmente, <span className="text-amber-500 font-black text-3xl mx-1">{warrantyData.length}</span> ativos possuem cobertura técnica de garantia de fábrica em vigência.
+                                </>
+                            ) : (
+                                <>
+                                    A concentração comercial em <span className="font-black text-white italic">Plataformas de Acessibilidade</span> atinge <span className="text-brand-primary font-black text-3xl mx-1">
+                                        {Math.round((contracts.reduce((acc, c) => acc + c.platformContracted, 0) / (contracts.reduce((acc, c) => acc + c.platformContracted + c.elevatorContracted, 0) || 1)) * 100)}%
+                                    </span> do volume total de ativos gerenciados.
+                                </>
+                            )}
                         </p>
                     </div>
 
