@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Client, Contract } from '../types';
+import { Client, Contract, AccountsReceivable, AccountsReceivableStatus } from '../types';
 
 export const ReportService = {
     /**
@@ -259,6 +259,113 @@ export const ReportService = {
         } catch (error) {
             console.error('Erro (Relatório Garantia):', error);
             alert('Erro ao gerar lista de garantias. Verifique os dados de instalação.');
+        }
+    },
+
+    /**
+     * Generates a PDF report for Accounts Receivable.
+     */
+    generateAccountsReceivableReport: (receivables: AccountsReceivable[], contracts: Contract[]) => {
+        try {
+            const doc = new jsPDF();
+            const now = new Date();
+
+            doc.setFontSize(22);
+            doc.setTextColor(79, 70, 229); // indigo-600
+            doc.text('Relatório de Contas a Receber', 14, 22);
+
+            doc.setFontSize(10);
+            doc.setTextColor(140);
+            doc.text(`Gerado em: ${now.toLocaleString('pt-BR')}`, 14, 30);
+            doc.setDrawColor(226, 232, 240);
+            doc.line(14, 35, 196, 35);
+
+            // Grouping
+            const received = receivables.filter(r => r.status === AccountsReceivableStatus.RECEIVED);
+            const pending = receivables.filter(r => r.status === AccountsReceivableStatus.PENDING);
+
+            const calculateTotal = (items: AccountsReceivable[]) => {
+                return items.reduce((acc, current) => {
+                    const contract = contracts.find(c => c.id === current.contractId);
+                    return acc + (contract?.value || 0);
+                }, 0);
+            };
+
+            const totalReceivedValue = calculateTotal(received);
+            const totalPendingValue = calculateTotal(pending);
+
+            // Pending Table
+            doc.setFontSize(14);
+            doc.setTextColor(30);
+            doc.text('Contratos a Receber (Pendentes)', 14, 45);
+
+            const pendingData = pending.map(r => {
+                const contract = contracts.find(c => c.id === r.contractId);
+                return [
+                    r.clientName || 'N/D',
+                    r.contractTitle || 'N/D',
+                    r.invoiceNumber || '---',
+                    r.dueDate ? new Date(r.dueDate).toLocaleDateString('pt-BR') : '---',
+                    `R$ ${(contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                ];
+            });
+
+            autoTable(doc, {
+                startY: 50,
+                head: [['Cliente', 'Contrato', 'NF', 'Vencimento', 'Valor']],
+                body: pendingData,
+                theme: 'striped',
+                headStyles: { fillColor: [245, 158, 11] }, // amber-500
+                styles: { fontSize: 8 },
+                columnStyles: { 4: { halign: 'right' } }
+            });
+
+            let currentY = (doc as any).lastAutoTable.finalY + 10;
+            doc.setFontSize(11);
+            doc.text(`Subtotal a Receber: R$ ${totalPendingValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 140, currentY, { align: 'right' });
+
+            // Received Table
+            currentY += 15;
+            doc.setFontSize(14);
+            doc.text('Contratos Recebidos', 14, currentY);
+
+            const receivedData = received.map(r => {
+                const contract = contracts.find(c => c.id === r.contractId);
+                return [
+                    r.clientName || 'N/D',
+                    r.contractTitle || 'N/D',
+                    r.invoiceNumber || '---',
+                    r.issueDate ? new Date(r.issueDate).toLocaleDateString('pt-BR') : '---',
+                    `R$ ${(contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                ];
+            });
+
+            autoTable(doc, {
+                startY: currentY + 5,
+                head: [['Cliente', 'Contrato', 'NF', 'Emissão', 'Valor']],
+                body: receivedData,
+                theme: 'striped',
+                headStyles: { fillColor: [16, 185, 129] }, // emerald-500
+                styles: { fontSize: 8 },
+                columnStyles: { 4: { halign: 'right' } }
+            });
+
+            currentY = (doc as any).lastAutoTable.finalY + 10;
+            doc.text(`Subtotal Recebido: R$ ${totalReceivedValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 140, currentY, { align: 'right' });
+
+            // Summary
+            currentY += 15;
+            doc.setDrawColor(226, 232, 240);
+            doc.line(14, currentY, 196, currentY);
+            currentY += 10;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Total Geral Consolidado: R$ ${(totalReceivedValue + totalPendingValue).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 196, currentY, { align: 'right' });
+
+            doc.save(`Relatorio_Contas_Receber_${now.toISOString().split('T')[0]}.pdf`);
+        } catch (error) {
+            console.error('Erro (Relatório AR):', error);
+            alert('Erro ao gerar relatório de contas a receber.');
         }
     }
 };

@@ -90,6 +90,10 @@
     -webkit-text-fill-color: transparent;
 }
 
+.bg-gradient-brand-indigo {
+    background: linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-primary) 100%);
+}
+
 .btn-primary {
     background: var(--brand-indigo);
     color: white;

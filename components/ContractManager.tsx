@@ -41,6 +41,14 @@ const ContractManager: React.FC<ContractManagerProps> = ({
     observations: '',
     warranty: undefined
   });
+  const [showValidationError, setShowValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (showValidationError) {
+      const timer = setTimeout(() => setShowValidationError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showValidationError]);
 
   useEffect(() => {
     if (forceOpenWithClientId) {
@@ -106,7 +114,13 @@ const ContractManager: React.FC<ContractManagerProps> = ({
     }
 
     if (!formData.clientId) {
-      alert('Por favor, selecione um cliente para o contrato.');
+      setShowValidationError('Por favor, selecione um cliente para o contrato.');
+      return;
+    }
+
+    if (sanitizedData.platformInstalled > sanitizedData.platformContracted || 
+        sanitizedData.elevatorInstalled > sanitizedData.elevatorContracted) {
+      setShowValidationError('A quantidade instalada não pode ser superior à quantidade contratada.');
       return;
     }
 
@@ -264,6 +278,17 @@ const ContractManager: React.FC<ContractManagerProps> = ({
                 </div>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-strong hover:bg-slate-50 transition-all text-2xl shadow-sm">✕</button>
               </header>
+
+              {showValidationError && (
+                <div className="mb-8 p-6 bg-brand-rose/10 border-2 border-brand-rose/20 rounded-[2rem] flex items-center space-x-4 animate-in slide-in-from-top-4 duration-300">
+                  <div className="w-12 h-12 bg-brand-rose rounded-2xl flex items-center justify-center text-white text-xl shadow-lg ring-4 ring-brand-rose/10">⚠️</div>
+                  <div>
+                    <h4 className="text-sm font-black text-brand-rose uppercase tracking-widest">Erro de Validação</h4>
+                    <p className="text-brand-rose/80 text-xs font-bold mt-1">{showValidationError}</p>
+                  </div>
+                  <button type="button" onClick={() => setShowValidationError(null)} className="ml-auto text-brand-rose hover:scale-110 transition-transform">✕</button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 <div className="lg:col-span-2 space-y-8">

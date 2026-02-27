@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AccountsReceivable, AccountsReceivableStatus, User, Contract } from '../types';
 import { storage } from '../services/storage';
+import { ReportService } from '../services/reports';
 
 interface AccountsReceivableManagerProps {
     receivables: AccountsReceivable[];
@@ -45,6 +46,40 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
         );
     }, [contracts, receivables]);
 
+    const metrics = useMemo(() => {
+        const stats = {
+            totalReceived: 0,
+            totalPending: 0,
+            totalOverdue: 0,
+            overdueCount: 0,
+            pendingCount: 0,
+            receivedCount: 0
+        };
+
+        receivables.forEach(r => {
+            const contract = contracts.find(c => c.id === r.contractId);
+            const value = contract?.value || 0;
+
+            if (r.status === AccountsReceivableStatus.RECEIVED) {
+                stats.totalReceived += value;
+                stats.receivedCount++;
+            } else if (r.status === AccountsReceivableStatus.PENDING) {
+                stats.totalPending += value;
+                stats.pendingCount++;
+
+                if (r.dueDate && new Date(r.dueDate) < new Date()) {
+                    stats.totalOverdue += value;
+                    stats.overdueCount++;
+                }
+            }
+        });
+
+        const totalValue = stats.totalReceived + stats.totalPending;
+        const collectionRate = totalValue > 0 ? (stats.totalReceived / totalValue * 100).toFixed(1) : '0';
+
+        return { ...stats, collectionRate };
+    }, [receivables, contracts]);
+
     const handleGenerate = async (contractId: string) => {
         try {
             await storage.generateReceivableForContract(contractId);
@@ -85,15 +120,86 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                     <p className="text-muted font-medium">Gestão de faturamento e recebimentos</p>
                 </div>
 
-                {completedContractsWithoutReceivable.length > 0 && (
+                <div className="flex flex-wrap items-center gap-4">
                     <button
-                        onClick={() => setIsGenerating(!isGenerating)}
-                        className="group flex items-center space-x-3 bg-[#4f46e5] hover:bg-[#4338ca] text-white px-6 py-4 rounded-2xl font-black transition-all shadow-premium"
+                        onClick={() => ReportService.generateAccountsReceivableReport(receivables, contracts)}
+                        className="flex items-center space-x-2 bg-white border border-slate-200 hover:border-brand-primary text-slate-700 px-6 py-4 rounded-2xl font-black transition-all shadow-sm group"
                     >
-                        <span className="text-xl group-hover:rotate-12 transition-transform">💰</span>
-                        <span>Sincronizar ({completedContractsWithoutReceivable.length})</span>
+                        <span className="text-xl group-hover:scale-110 transition-transform">📄</span>
+                        <span className="text-xs uppercase tracking-widest">Baixar PDF</span>
                     </button>
-                )}
+
+                    {completedContractsWithoutReceivable.length > 0 && (
+                        <button
+                            onClick={() => setIsGenerating(!isGenerating)}
+                            className="group flex items-center space-x-3 bg-[#4f46e5] hover:bg-[#4338ca] text-white px-6 py-4 rounded-2xl font-black transition-all shadow-premium"
+                        >
+                            <span className="text-xl group-hover:rotate-12 transition-transform">💰</span>
+                            <span>Sincronizar ({completedContractsWithoutReceivable.length})</span>
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Dashboard Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="premium-card p-8 bg-white border-l-4 border-l-emerald-500">
+                    <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-4">Total Recebido</p>
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <p className="text-xs font-black text-emerald-500 mb-1">{metrics.receivedCount} Contratos</p>
+                            <p className="text-2xl font-black text-strong leading-none">
+                                <span className="text-xs font-black text-muted mr-1">R$</span>
+                                {metrics.totalReceived.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-xl text-emerald-500">📈</div>
+                    </div>
+                </div>
+
+                <div className="premium-card p-8 bg-white border-l-4 border-l-amber-500">
+                    <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-4">Total a Receber</p>
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <p className="text-xs font-black text-amber-500 mb-1">{metrics.pendingCount} Pendentes</p>
+                            <p className="text-2xl font-black text-strong leading-none">
+                                <span className="text-xs font-black text-muted mr-1">R$</span>
+                                {metrics.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-xl text-amber-500">⏳</div>
+                    </div>
+                </div>
+
+                <div className="premium-card p-8 bg-white border-l-4 border-l-brand-rose">
+                    <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-4">Total em Atraso</p>
+                    <div className="flex items-end justify-between">
+                        <div>
+                            <p className="text-xs font-black text-brand-rose mb-1">{metrics.overdueCount} Críticos</p>
+                            <p className="text-2xl font-black text-strong leading-none">
+                                <span className="text-xs font-black text-muted mr-1">R$</span>
+                                {metrics.totalOverdue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                        </div>
+                        <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-xl text-brand-rose">⚠️</div>
+                    </div>
+                </div>
+
+                <div className="premium-card p-8 bg-gradient-brand-indigo text-white border-none relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-1000" />
+                    <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-4 relative z-10">Insights Estratégicos</p>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl font-black">{metrics.collectionRate}%</span>
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">TAXA REC.</span>
+                        </div>
+                        <p className="text-[11px] font-medium text-white/80 leading-snug">
+                            {metrics.overdueCount > 0
+                                ? `Atenção: ${metrics.overdueCount} títulos em atraso impactando o fluxo.`
+                                : "Excelente! Nenhuma pendência crítica identificada no momento."}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {isGenerating && (
