@@ -335,14 +335,14 @@ export const ReportService = {
                     r.clientName || 'N/D',
                     r.contractTitle || 'N/D',
                     r.invoiceNumber || '---',
-                    r.issueDate ? new Date(r.issueDate).toLocaleDateString('pt-BR') : '---',
+                    r.paymentDate ? new Date(r.paymentDate).toLocaleDateString('pt-BR') : '---',
                     `R$ ${(contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                 ];
             });
 
             autoTable(doc, {
                 startY: currentY + 5,
-                head: [['Cliente', 'Contrato', 'NF', 'Emissão', 'Valor']],
+                head: [['Cliente', 'Contrato', 'NF', 'Recebimento', 'Valor']],
                 body: receivedData,
                 theme: 'striped',
                 headStyles: { fillColor: [16, 185, 129] }, // emerald-500

@@ -53,10 +53,12 @@ const mapAccountsReceivable = (r: any): AccountsReceivable => ({
   dueDate: r.due_date,
   status: r.status as AccountsReceivableStatus,
   observations: r.observations,
+  paymentDate: r.payment_date,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
   contractTitle: r.contracts?.title,
-  clientName: r.contracts?.clients?.name
+  clientName: r.contracts?.clients?.name,
+  contractValue: r.contracts?.value
 });
 
 export const storage = {
@@ -192,7 +194,7 @@ export const storage = {
   getAccountsReceivable: async (): Promise<AccountsReceivable[]> => {
     const { data, error } = await supabase
       .from('accounts_receivable')
-      .select('*, contracts(title, clients(name))')
+      .select('*, contracts(title, value, clients(name))')
       .order('due_date', { ascending: true });
     if (error) throw error;
     return (data || []).map(mapAccountsReceivable);
@@ -207,9 +209,10 @@ export const storage = {
         issue_date: sanitizeDate(receivable.issueDate),
         due_date: sanitizeDate(receivable.dueDate),
         status: receivable.status,
-        observations: receivable.observations
+        observations: receivable.observations,
+        payment_date: sanitizeDate(receivable.paymentDate)
       })
-      .select('*, contracts(title, clients(name))')
+      .select('*, contracts(title, value, clients(name))')
       .single();
     if (error) throw error;
     return mapAccountsReceivable(data);
@@ -224,6 +227,7 @@ export const storage = {
         due_date: sanitizeDate(receivable.dueDate),
         status: receivable.status,
         observations: receivable.observations,
+        payment_date: sanitizeDate(receivable.paymentDate),
         updated_at: new Date().toISOString()
       })
       .eq('id', receivable.id);

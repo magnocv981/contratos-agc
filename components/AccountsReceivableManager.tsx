@@ -20,6 +20,8 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [editingReceivable, setEditingReceivable] = useState<AccountsReceivable | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [selectedReceivableForDate, setSelectedReceivableForDate] = useState<AccountsReceivable | null>(null);
+    const [paymentDateInput, setPaymentDateInput] = useState(new Date().toISOString().split('T')[0]);
 
     const filteredReceivables = useMemo(() => {
         return receivables.filter(r => {
@@ -90,10 +92,15 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
         }
     };
 
-    const handleUpdateStatus = async (receivable: AccountsReceivable, newStatus: AccountsReceivableStatus) => {
+    const handleUpdateStatus = async (receivable: AccountsReceivable, newStatus: AccountsReceivableStatus, paymentDate?: string) => {
         try {
-            await storage.updateAccountsReceivable({ ...receivable, status: newStatus });
+            await storage.updateAccountsReceivable({
+                ...receivable,
+                status: newStatus,
+                paymentDate: paymentDate || receivable.paymentDate
+            });
             onUpdate();
+            setSelectedReceivableForDate(null);
         } catch (error) {
             console.error('Error updating status:', error);
         }
@@ -260,6 +267,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                             <tr className="bg-slate-50/50">
                                 <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100">Cliente / Contrato</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100">NF / Emissão</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100">Valor</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100">Vencimento</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100 text-center">Status</th>
                                 <th className="px-6 py-5 text-[10px] font-black text-muted uppercase tracking-widest border-b border-slate-100 text-right">Ações</th>
@@ -277,6 +285,11 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                         <p className="text-xs text-muted mt-1">{r.issueDate ? new Date(r.issueDate).toLocaleDateString() : '---'}</p>
                                     </td>
                                     <td className="px-6 py-6">
+                                        <p className="font-bold text-sm text-brand-primary">
+                                            R$ {(r.contractValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        </p>
+                                    </td>
+                                    <td className="px-6 py-6">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-sm text-strong">
                                                 {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '---'}
@@ -287,13 +300,23 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                         </div>
                                     </td>
                                     <td className="px-6 py-6 text-center">
-                                        <StatusBadge status={r.status} />
+                                        <div className="flex flex-col items-center">
+                                            <StatusBadge status={r.status} />
+                                            {r.status === AccountsReceivableStatus.RECEIVED && r.paymentDate && (
+                                                <span className="text-[9px] font-bold text-emerald-600 mt-1 uppercase tracking-tighter">
+                                                    Recebido em {new Date(r.paymentDate).toLocaleDateString()}
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-6 text-right">
                                         <div className="flex items-center justify-end space-x-2">
                                             {r.status === 'Pendente' && (
                                                 <button
-                                                    onClick={() => handleUpdateStatus(r, AccountsReceivableStatus.RECEIVED)}
+                                                    onClick={() => {
+                                                        setSelectedReceivableForDate(r);
+                                                        setPaymentDateInput(new Date().toISOString().split('T')[0]);
+                                                    }}
                                                     className="p-2 hover:bg-emerald-100 text-emerald-600 rounded-xl transition-all"
                                                     title="Marcar como Recebido"
                                                 >
@@ -327,7 +350,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                             ))}
                             {filteredReceivables.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-20 text-center">
+                                    <td colSpan={6} className="px-6 py-20 text-center">
                                         <div className="text-4xl mb-4">📭</div>
                                         <p className="text-slate-400 font-bold">Nenhum registro encontrado</p>
                                     </td>
@@ -360,6 +383,13 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                     className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all font-bold"
                                     placeholder="NF-0000"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-muted uppercase tracking-widest mb-2">Valor do Contrato</label>
+                                <div className="w-full px-5 py-4 bg-slate-100 border border-slate-200 rounded-2xl font-black text-brand-primary">
+                                    R$ {(editingReceivable.contractValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -396,6 +426,18 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                 </select>
                             </div>
 
+                            {editingReceivable.status === AccountsReceivableStatus.RECEIVED && (
+                                <div className="animate-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-xs font-black text-muted uppercase tracking-widest mb-2">Data do Pagamento</label>
+                                    <input
+                                        type="date"
+                                        value={editingReceivable.paymentDate || ''}
+                                        onChange={e => setEditingReceivable({ ...editingReceivable, paymentDate: e.target.value })}
+                                        className="w-full px-5 py-4 bg-emerald-50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all font-bold text-emerald-700"
+                                    />
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-xs font-black text-muted uppercase tracking-widest mb-2">Observações</label>
                                 <textarea
@@ -421,6 +463,44 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {selectedReceivableForDate && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-premium animate-in zoom-in-95 duration-300">
+                        <h3 className="text-xl font-black text-strong mb-2 flex items-center gap-3">
+                            <span>📅</span> Data do Recebimento
+                        </h3>
+                        <p className="text-sm text-muted font-medium mb-6">Confirme a data em que o valor entrou em conta.</p>
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-muted uppercase tracking-widest mb-2">Data do Pagamento</label>
+                                <input
+                                    type="date"
+                                    value={paymentDateInput}
+                                    onChange={e => setPaymentDateInput(e.target.value)}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all font-bold"
+                                />
+                            </div>
+
+                            <div className="flex space-x-3 pt-2">
+                                <button
+                                    onClick={() => setSelectedReceivableForDate(null)}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all text-sm"
+                                >
+                                    Voltar
+                                </button>
+                                <button
+                                    onClick={() => handleUpdateStatus(selectedReceivableForDate, AccountsReceivableStatus.RECEIVED, paymentDateInput)}
+                                    className="flex-1 py-4 bg-emerald-500 text-white font-black rounded-2xl hover:bg-emerald-600 shadow-premium transition-all text-sm"
+                                >
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

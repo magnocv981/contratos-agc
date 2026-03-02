@@ -63,11 +63,13 @@ export interface AccountsReceivable {
   dueDate?: string;
   status: AccountsReceivableStatus;
   observations?: string;
+  paymentDate?: string;
   createdAt: string;
   updatedAt: string;
   // Join data
   contractTitle?: string;
   clientName?: string;
+  contractValue?: number;
 }
 
 export interface User {
