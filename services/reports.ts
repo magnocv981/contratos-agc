@@ -280,6 +280,12 @@ export const ReportService = {
             doc.setDrawColor(226, 232, 240);
             doc.line(14, 35, 196, 35);
 
+            const formatDateLocal = (dateStr: string | undefined) => {
+                if (!dateStr) return '---';
+                const [year, month, day] = dateStr.split('-').map(Number);
+                return new Date(year, month - 1, day).toLocaleDateString('pt-BR');
+            };
+
             // Grouping
             const received = receivables.filter(r => r.status === AccountsReceivableStatus.RECEIVED);
             const pending = receivables.filter(r => r.status === AccountsReceivableStatus.PENDING);
@@ -305,7 +311,7 @@ export const ReportService = {
                     r.clientName || 'N/D',
                     r.contractTitle || 'N/D',
                     r.invoiceNumber || '---',
-                    r.dueDate ? new Date(r.dueDate).toLocaleDateString('pt-BR') : '---',
+                    formatDateLocal(r.dueDate),
                     `R$ ${(contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                 ];
             });
@@ -335,7 +341,7 @@ export const ReportService = {
                     r.clientName || 'N/D',
                     r.contractTitle || 'N/D',
                     r.invoiceNumber || '---',
-                    r.paymentDate ? new Date(r.paymentDate).toLocaleDateString('pt-BR') : '---',
+                    formatDateLocal(r.paymentDate),
                     `R$ ${(contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                 ];
             });

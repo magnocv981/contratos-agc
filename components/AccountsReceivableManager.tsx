@@ -16,6 +16,21 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
     currentUser,
     onUpdate
 }) => {
+    // Helper to format date without UTC offset issues
+    const formatDateLocal = (dateStr: string | undefined) => {
+        if (!dateStr) return '---';
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day).toLocaleDateString('pt-BR');
+    };
+
+    const isOverdue = (dueDateStr: string | undefined) => {
+        if (!dueDateStr) return false;
+        const [year, month, day] = dueDateStr.split('-').map(Number);
+        const dueDate = new Date(year, month - 1, day);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return dueDate < today;
+    };
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [editingReceivable, setEditingReceivable] = useState<AccountsReceivable | null>(null);
@@ -69,7 +84,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                 stats.totalPending += value;
                 stats.pendingCount++;
 
-                if (r.dueDate && new Date(r.dueDate) < new Date()) {
+                if (isOverdue(r.dueDate)) {
                     stats.totalOverdue += value;
                     stats.overdueCount++;
                 }
@@ -282,7 +297,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                     </td>
                                     <td className="px-6 py-6">
                                         <p className="font-bold text-sm text-strong">{r.invoiceNumber || '---'}</p>
-                                        <p className="text-xs text-muted mt-1">{r.issueDate ? new Date(r.issueDate).toLocaleDateString() : '---'}</p>
+                                        <p className="text-xs text-muted mt-1">{formatDateLocal(r.issueDate)}</p>
                                     </td>
                                     <td className="px-6 py-6">
                                         <p className="font-bold text-sm text-brand-primary">
@@ -292,9 +307,9 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                     <td className="px-6 py-6">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-sm text-strong">
-                                                {r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '---'}
+                                                {formatDateLocal(r.dueDate)}
                                             </span>
-                                            {r.status === 'Pendente' && r.dueDate && new Date(r.dueDate) < new Date() && (
+                                            {r.status === 'Pendente' && isOverdue(r.dueDate) && (
                                                 <span className="text-[10px] text-rose-500 font-black uppercase mt-1">Atrasado</span>
                                             )}
                                         </div>
@@ -304,7 +319,7 @@ const AccountsReceivableManager: React.FC<AccountsReceivableManagerProps> = ({
                                             <StatusBadge status={r.status} />
                                             {r.status === AccountsReceivableStatus.RECEIVED && r.paymentDate && (
                                                 <span className="text-[9px] font-bold text-emerald-600 mt-1 uppercase tracking-tighter">
-                                                    Recebido em {new Date(r.paymentDate).toLocaleDateString()}
+                                                    Recebido em {formatDateLocal(r.paymentDate)}
                                                 </span>
                                             )}
                                         </div>
