@@ -61,7 +61,7 @@ const App: React.FC = () => {
 
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard clients={clients} contracts={contracts} />;
+        return <Dashboard clients={clients} contracts={contracts} receivables={receivables} />;
       case 'clients':
         return (
           <ClientManager
@@ -127,7 +127,7 @@ const App: React.FC = () => {
           />
         );
       default:
-        return <Dashboard clients={clients} contracts={contracts} />;
+        return <Dashboard clients={clients} contracts={contracts} receivables={receivables} />;
     }
   };
 

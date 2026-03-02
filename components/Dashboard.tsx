@@ -1,13 +1,14 @@
 import React from 'react';
-import { Client, Contract } from '../types';
+import { Client, Contract, AccountsReceivable } from '../types';
 import { useDashboardStats } from '../hooks/useDashboardStats';
 
 interface DashboardProps {
   clients: Client[];
   contracts: Contract[];
+  receivables: AccountsReceivable[];
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
+const Dashboard: React.FC<DashboardProps> = ({ clients, contracts, receivables }) => {
   const {
     activeContractsCount,
     pendingContractsCount,
@@ -22,7 +23,7 @@ const Dashboard: React.FC<DashboardProps> = ({ clients, contracts }) => {
     approachingDeadlines,
     insights,
     currentYear
-  } = useDashboardStats(clients, contracts);
+  } = useDashboardStats(clients, contracts, receivables);
 
   const [showAlerts, setShowAlerts] = React.useState(true);
 
