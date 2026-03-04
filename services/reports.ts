@@ -323,7 +323,13 @@ export const ReportService = {
                 theme: 'striped',
                 headStyles: { fillColor: [245, 158, 11] }, // amber-500
                 styles: { fontSize: 8 },
-                columnStyles: { 4: { halign: 'right' } }
+                columnStyles: {
+                    0: { cellWidth: 50 },
+                    1: { cellWidth: 55 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 27, halign: 'right' }
+                }
             });
 
             let currentY = (doc as any).lastAutoTable.finalY + 10;
@@ -353,7 +359,13 @@ export const ReportService = {
                 theme: 'striped',
                 headStyles: { fillColor: [16, 185, 129] }, // emerald-500
                 styles: { fontSize: 8 },
-                columnStyles: { 4: { halign: 'right' } }
+                columnStyles: {
+                    0: { cellWidth: 50 },
+                    1: { cellWidth: 55 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 27, halign: 'right' }
+                }
             });
 
             currentY = (doc as any).lastAutoTable.finalY + 10;
