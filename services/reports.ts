@@ -97,9 +97,15 @@ export const ReportService = {
             doc.text(`Investimento Global Acumulado: R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 14, summaryY + 8);
 
             // Financial Information Section
-            const clientReceivables = receivables.filter(r => 
-                clientContracts.some(c => c.id === r.contractId)
-            ).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+            const safeReceivables = receivables || [];
+            const clientReceivables = safeReceivables.filter(r => {
+                const rContractId = r.contractId || (r as any).contract_id;
+                return clientContracts.some(c => c.id === rContractId);
+            }).sort((a, b) => {
+                const dateA = a.dueDate || (a as any).due_date || '';
+                const dateB = b.dueDate || (b as any).due_date || '';
+                return dateA.localeCompare(dateB);
+            });
 
             if (clientReceivables.length > 0) {
                 const financialY = summaryY + 22;
@@ -110,8 +116,15 @@ export const ReportService = {
 
                 const financialHeaders = [['NF', 'Vencimento / Pgto', 'Status', 'Valor (R$)']];
                 const financialData = clientReceivables.map(r => {
-                    const contract = contracts.find(c => c.id === r.contractId);
-                    const date = r.status === AccountsReceivableStatus.RECEIVED ? r.paymentDate : r.dueDate;
+                    const rContractId = r.contractId || (r as any).contract_id;
+                    const contract = contracts.find(c => c.id === rContractId);
+                    
+                    const status = r.status || (r as any).status || 'Pendente';
+                    const dueDate = r.dueDate || (r as any).due_date;
+                    const paymentDate = r.paymentDate || (r as any).payment_date;
+                    const invoiceNumber = r.invoiceNumber || (r as any).invoice_number;
+
+                    const date = status === AccountsReceivableStatus.RECEIVED ? paymentDate : dueDate;
                     const dateStr = date ? date.split('-').reverse().join('/') : '-';
                     
                     return [
