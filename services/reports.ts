@@ -6,7 +6,7 @@ export const ReportService = {
     /**
      * Generates a detailed PDF report for a specific client and their contracts.
      */
-    generateClientFicha: (client: Client, contracts: Contract[]) => {
+    generateClientFicha: (client: Client, contracts: Contract[], receivables: AccountsReceivable[]) => {
         try {
             const doc = new jsPDF();
             const clientContracts = (contracts || []).filter(c => c.clientId === client.id);
@@ -95,6 +95,48 @@ export const ReportService = {
             doc.setFont('helvetica', 'bold');
             doc.text(`Total de Contratos Localizados: ${clientContracts.length}`, 14, summaryY);
             doc.text(`Investimento Global Acumulado: R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 14, summaryY + 8);
+
+            // Financial Information Section
+            const clientReceivables = receivables.filter(r => 
+                clientContracts.some(c => c.id === r.contractId)
+            ).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+
+            if (clientReceivables.length > 0) {
+                const financialY = summaryY + 22;
+                doc.setFontSize(14);
+                doc.setTextColor(30);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Informações Financeiras (Contas a Receber)', 14, financialY);
+
+                const financialHeaders = [['NF', 'Vencimento / Pgto', 'Status', 'Valor (R$)']];
+                const financialData = clientReceivables.map(r => {
+                    const contract = contracts.find(c => c.id === r.contractId);
+                    const date = r.status === AccountsReceivableStatus.RECEIVED ? r.paymentDate : r.dueDate;
+                    const dateStr = date ? date.split('-').reverse().join('/') : '-';
+                    
+                    return [
+                        r.invoiceNumber || '---',
+                        dateStr,
+                        r.status || 'Pendente',
+                        (contract?.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                    ];
+                });
+
+                autoTable(doc, {
+                    startY: financialY + 5,
+                    head: financialHeaders,
+                    body: financialData,
+                    theme: 'striped',
+                    headStyles: { fillColor: [245, 158, 11] }, // amber-500 for financial association
+                    styles: { fontSize: 8 },
+                    columnStyles: {
+                        0: { cellWidth: 40 },
+                        1: { cellWidth: 50 },
+                        2: { cellWidth: 40 },
+                        3: { halign: 'right' }
+                    }
+                });
+            }
 
             doc.save(`Ficha_${(client.name || 'Cliente').replace(/\s+/g, '_')}.pdf`);
         } catch (error) {

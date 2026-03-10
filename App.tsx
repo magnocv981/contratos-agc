@@ -67,6 +67,7 @@ const App: React.FC = () => {
           <ClientManager
             clients={clients}
             contracts={contracts}
+            receivables={receivables}
             currentUser={currentUser}
             onAdd={async (c) => {
               const newClient = await storage.saveClient(c);

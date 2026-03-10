@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Client, Contract, User } from '../types';
+import { Client, Contract, User, AccountsReceivable } from '../types';
 import { ReportService } from '../services/reports';
 
 interface ClientManagerProps {
   clients: Client[];
   contracts: Contract[];
+  receivables: AccountsReceivable[];
   currentUser: User;
   onAdd: (client: Client) => void;
   onEdit: (client: Client) => void;
@@ -18,7 +19,7 @@ const BRAZILIAN_STATES = [
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ];
 
-const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, currentUser, onAdd, onEdit, onDelete, onPromptContract }) => {
+const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, receivables, currentUser, onAdd, onEdit, onDelete, onPromptContract }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -166,7 +167,7 @@ const ClientManager: React.FC<ClientManagerProps> = ({ clients, contracts, curre
                         👁️
                       </button>
                       <button
-                        onClick={() => ReportService.generateClientFicha(client, contracts)}
+                        onClick={() => ReportService.generateClientFicha(client, contracts, receivables)}
                         className="w-10 h-10 flex items-center justify-center text-subtle hover:text-brand-primary bg-white hover:bg-brand-primary/5 rounded-2xl transition-all border border-border-default hover:border-brand-primary/20 shadow-sm"
                         title="Relatário PDF"
                       >

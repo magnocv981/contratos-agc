@@ -42,6 +42,7 @@ const ContractManager: React.FC<ContractManagerProps> = ({
     warranty: undefined
   });
   const [showValidationError, setShowValidationError] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<ContractStatus | 'ALL'>('ALL');
 
   useEffect(() => {
     if (showValidationError) {
@@ -118,8 +119,8 @@ const ContractManager: React.FC<ContractManagerProps> = ({
       return;
     }
 
-    if (sanitizedData.platformInstalled > sanitizedData.platformContracted || 
-        sanitizedData.elevatorInstalled > sanitizedData.elevatorContracted) {
+    if (sanitizedData.platformInstalled > sanitizedData.platformContracted ||
+      sanitizedData.elevatorInstalled > sanitizedData.elevatorContracted) {
       setShowValidationError('A quantidade instalada não pode ser superior à quantidade contratada.');
       return;
     }
@@ -152,112 +153,136 @@ const ContractManager: React.FC<ContractManagerProps> = ({
         </button>
       </header>
 
+      <div className="flex flex-wrap items-center gap-3 bg-white/50 p-2 rounded-[2rem] border border-border-default/50 w-fit">
+        <button
+          onClick={() => setFilterStatus('ALL')}
+          className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === 'ALL'
+            ? 'bg-slate-900 text-white shadow-premium'
+            : 'text-subtle hover:bg-slate-100'}`}
+        >
+          Todos
+        </button>
+        {Object.values(ContractStatus).map((status) => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === status
+              ? 'bg-brand-primary text-white shadow-premium'
+              : 'text-subtle hover:bg-slate-100'}`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-6">
-        {contracts.map((contract) => {
-          const deadline = new Date(contract.estimatedInstallationDate);
-          const diffDays = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-          const isUrgent = diffDays <= 15 && diffDays >= 0 && contract.status !== ContractStatus.COMPLETED && contract.status !== ContractStatus.CLOSED;
+        {contracts
+          .filter(contract => filterStatus === 'ALL' || contract.status === filterStatus)
+          .map((contract) => {
+            const deadline = new Date(contract.estimatedInstallationDate);
+            const diffDays = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const isUrgent = diffDays <= 15 && diffDays >= 0 && contract.status !== ContractStatus.COMPLETED && contract.status !== ContractStatus.CLOSED;
 
-          return (
-            <div
-              key={contract.id}
-              className={`premium-card relative overflow-hidden transition-all group ${isUrgent ? 'border-brand-rose/30 shadow-[0_0_30px_rgba(244,63,94,0.1)]' : ''}`}
-            >
-              {isUrgent && (
-                <div className="absolute top-0 right-0 px-5 py-1.5 bg-brand-rose text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl shadow-lg animate-pulse z-10">
-                  Prioridade Crítica
-                </div>
-              )}
-
-              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <span className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-inner ${contract.status === ContractStatus.ACTIVE ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/20' :
-                      contract.status === ContractStatus.COMPLETED ? 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/20' :
-                        'bg-slate-50 text-subtle border-border-default'
-                      }`}>
-                      {contract.status}
-                    </span>
-                    <span className="text-[10px] text-subtle font-black uppercase tracking-widest opacity-40">{contract.id.slice(0, 8)}</span>
-                  </div>
-
-                  <button onClick={() => handleOpenModal(contract, undefined, true)} className="text-left block group/title">
-                    <h3 className="text-xl font-black text-strong group-hover:text-brand-primary transition-colors uppercase tracking-tight leading-tight">
-                      {contract.title}
-                    </h3>
-                    <div className="flex items-center mt-2 text-muted">
-                      <div className="w-2 h-2 rounded-full bg-brand-primary mr-3 shadow-indigo" />
-                      <span className="font-black uppercase tracking-widest text-[10px]">{getClientName(contract.clientId)}</span>
-                    </div>
-                  </button>
-                </div>
-
-                <div className="flex flex-col md:flex-row md:items-center gap-6 bg-slate-50/50 p-6 rounded-3xl border border-border-default/50">
-                  <div className="md:pr-8 md:border-r border-border-default">
-                    <p className="text-[9px] uppercase font-black text-subtle tracking-widest mb-3">Cronograma</p>
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-muted">Instalação: <span className={`font-black ${isUrgent ? 'text-brand-rose' : 'text-strong'}`}>{new Date(contract.estimatedInstallationDate).toLocaleDateString('pt-BR')}</span></p>
-                      <p className="text-xs font-bold text-muted">Termo Final: <span className="text-strong font-black">{new Date(contract.endDate).toLocaleDateString('pt-BR')}</span></p>
-                    </div>
-                  </div>
-
-                  <div className="md:pr-8 md:border-r border-border-default">
-                    <p className="text-[9px] uppercase font-black text-subtle tracking-widest mb-3">Valor Global</p>
-                    <p className="text-2xl font-black text-strong leading-none">
-                      <span className="text-xs font-black text-muted mr-1">R$</span>
-                      {contract.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => handleOpenModal(contract, undefined, true)}
-                      className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-primary hover:border-brand-primary/20 shadow-sm transition-all"
-                      title="Visualizar"
-                    >
-                      👁️
-                    </button>
-                    <button
-                      onClick={() => handleOpenModal(contract)}
-                      className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-primary hover:border-brand-primary/20 shadow-sm transition-all"
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
-                    {currentUser.role === 'admin' && onDelete && (
-                      <button
-                        onClick={() => onDelete(contract.id)}
-                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-rose hover:border-brand-rose/20 shadow-sm transition-all"
-                        title="Excluir"
-                      >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-border-default/50 flex flex-wrap items-center gap-6">
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-primary mr-2" />
-                    <span className="text-[10px] font-black text-subtle uppercase tracking-widest">PLAT: {contract.platformInstalled}/{contract.platformContracted}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald mr-2" />
-                    <span className="text-[10px] font-black text-subtle uppercase tracking-widest">ELEV: {contract.elevatorInstalled}/{contract.elevatorContracted}</span>
-                  </div>
-                </div>
-                {contract.warranty && (
-                  <div className="ml-auto flex items-center space-x-3 px-4 py-2 bg-brand-emerald/[0.03] border border-brand-emerald/10 rounded-2xl shadow-inner-soft">
-                    <span className="text-[9px] font-black text-brand-emerald uppercase tracking-widest">Manutenção & Garantia:</span>
-                    <span className="text-xs font-black text-brand-emerald/80 italic">Até {new Date(new Date(contract.warranty.completionDate).getTime() + (contract.warranty.warrantyDays * 24 * 60 * 60 * 1000)).toLocaleDateString('pt-BR')}</span>
+            return (
+              <div
+                key={contract.id}
+                className={`premium-card relative overflow-hidden transition-all group ${isUrgent ? 'border-brand-rose/30 shadow-[0_0_30px_rgba(244,63,94,0.1)]' : ''}`}
+              >
+                {isUrgent && (
+                  <div className="absolute top-0 right-0 px-5 py-1.5 bg-brand-rose text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl shadow-lg animate-pulse z-10">
+                    Prioridade Crítica
                   </div>
                 )}
+
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <span className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-inner ${contract.status === ContractStatus.ACTIVE ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/20' :
+                        contract.status === ContractStatus.COMPLETED ? 'bg-brand-emerald/10 text-brand-emerald border-brand-emerald/20' :
+                          'bg-slate-50 text-subtle border-border-default'
+                        }`}>
+                        {contract.status}
+                      </span>
+                      <span className="text-[10px] text-subtle font-black uppercase tracking-widest opacity-40">{contract.id.slice(0, 8)}</span>
+                    </div>
+
+                    <button onClick={() => handleOpenModal(contract, undefined, true)} className="text-left block group/title">
+                      <h3 className="text-xl font-black text-strong group-hover:text-brand-primary transition-colors uppercase tracking-tight leading-tight">
+                        {contract.title}
+                      </h3>
+                      <div className="flex items-center mt-2 text-muted">
+                        <div className="w-2 h-2 rounded-full bg-brand-primary mr-3 shadow-indigo" />
+                        <span className="font-black uppercase tracking-widest text-[10px]">{getClientName(contract.clientId)}</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center gap-6 bg-slate-50/50 p-6 rounded-3xl border border-border-default/50">
+                    <div className="md:pr-8 md:border-r border-border-default">
+                      <p className="text-[9px] uppercase font-black text-subtle tracking-widest mb-3">Cronograma</p>
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-muted">Instalação: <span className={`font-black ${isUrgent ? 'text-brand-rose' : 'text-strong'}`}>{new Date(contract.estimatedInstallationDate).toLocaleDateString('pt-BR')}</span></p>
+                        <p className="text-xs font-bold text-muted">Termo Final: <span className="text-strong font-black">{new Date(contract.endDate).toLocaleDateString('pt-BR')}</span></p>
+                      </div>
+                    </div>
+
+                    <div className="md:pr-8 md:border-r border-border-default">
+                      <p className="text-[9px] uppercase font-black text-subtle tracking-widest mb-3">Valor Global</p>
+                      <p className="text-2xl font-black text-strong leading-none">
+                        <span className="text-xs font-black text-muted mr-1">R$</span>
+                        {contract.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleOpenModal(contract, undefined, true)}
+                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-primary hover:border-brand-primary/20 shadow-sm transition-all"
+                        title="Visualizar"
+                      >
+                        👁️
+                      </button>
+                      <button
+                        onClick={() => handleOpenModal(contract)}
+                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-primary hover:border-brand-primary/20 shadow-sm transition-all"
+                        title="Editar"
+                      >
+                        ✏️
+                      </button>
+                      {currentUser.role === 'admin' && onDelete && (
+                        <button
+                          onClick={() => onDelete(contract.id)}
+                          className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-border-default text-subtle hover:text-brand-rose hover:border-brand-rose/20 shadow-sm transition-all"
+                          title="Excluir"
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-border-default/50 flex flex-wrap items-center gap-6">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary mr-2" />
+                      <span className="text-[10px] font-black text-subtle uppercase tracking-widest">PLAT: {contract.platformInstalled}/{contract.platformContracted}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald mr-2" />
+                      <span className="text-[10px] font-black text-subtle uppercase tracking-widest">ELEV: {contract.elevatorInstalled}/{contract.elevatorContracted}</span>
+                    </div>
+                  </div>
+                  {contract.warranty && (
+                    <div className="ml-auto flex items-center space-x-3 px-4 py-2 bg-brand-emerald/[0.03] border border-brand-emerald/10 rounded-2xl shadow-inner-soft">
+                      <span className="text-[9px] font-black text-brand-emerald uppercase tracking-widest">Manutenção & Garantia:</span>
+                      <span className="text-xs font-black text-brand-emerald/80 italic">Até {new Date(new Date(contract.warranty.completionDate).getTime() + (contract.warranty.warrantyDays * 24 * 60 * 60 * 1000)).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         {contracts.length === 0 && (
           <div className="premium-card p-32 text-center border-dashed opacity-50">
             <p className="text-muted font-black uppercase tracking-widest text-xs">Aguardando novos pipelines de contrato</p>
